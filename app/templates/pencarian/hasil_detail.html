@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Detail Hasil Pencarian{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-clock-history"></i> Detail Riwayat Pencarian</h4>
+    <a href="{{ url_for('pencarian.home') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Kembali ke Dashboard</a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+        <h5 class="fw-bold text-primary mb-3">Informasi Pencarian</h5>
+        <div class="row mb-2">
+            <div class="col-md-3 text-muted">Kata Kunci</div>
+            <div class="col-md-9 fw-bold">"{{ history.query_text }}"</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-3 text-muted">Kategori Terprediksi</div>
+            <div class="col-md-9"><span class="badge bg-primary">{{ history.predicted_kategori }}</span></div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-3 text-muted">Waktu Proses</div>
+            <div class="col-md-9">{{ history.response_time_ms }} ms</div>
+        </div>
+        <div class="row mb-0">
+            <div class="col-md-3 text-muted">Tanggal</div>
+            <div class="col-md-9">{{ history.search_date.strftime('%d/%m/%Y %H:%M:%S') }}</div>
+        </div>
+    </div>
+</div>
+
+<h5 class="fw-bold mb-3"><i class="bi bi-file-earmark-text"></i> Dokumen yang Ditemukan ({{ search_results|length }})</h5>
+
+{% if search_results %}
+<div class="list-group shadow-sm mb-4">
+    {% for sr in search_results %}
+    <div class="list-group-item list-group-item-action p-4 border-0 border-bottom">
+        <div class="d-flex w-100 justify-content-between align-items-center mb-2">
+            <h5 class="mb-1 fw-bold text-primary">
+                <span class="badge bg-secondary rounded-pill me-2">#{{ loop.index }}</span>
+                {{ sr.dok.judul if sr.dok else 'Dokumen Telah Dihapus' }}
+            </h5>
+            <small class="text-muted text-end">
+                Skor TF-IDF: <strong>{{ "%.4f"|format(sr.similarity_score) }}</strong><br>
+                <span class="badge {{ 'bg-success' if sr.is_boosted else 'bg-light text-dark' }}">
+                    {{ 'Kategori Cocok (Boosted)' if sr.is_boosted else 'Tanpa Boost' }}
+                </span>
+            </small>
+        </div>
+        {% if sr.dok %}
+        <div class="mb-2">
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-2">{{ sr.dok.kategori }}</span>
+            <small class="text-muted"><i class="bi bi-calendar3"></i> {{ sr.dok.tanggal_dokumen.strftime('%d/%m/%Y') if sr.dok.tanggal_dokumen else '-' }}</small>
+        </div>
+        <p class="mb-3 text-muted small" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+            {{ sr.dok.isi_dokumen }}
+        </p>
+        <a href="{{ url_for('dokumen.detail', id=sr.dok.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> Lihat Detail Dokumen</a>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-warning shadow-sm border-0">
+    <i class="bi bi-exclamation-triangle"></i> Tidak ada dokumen yang ditemukan untuk pencarian ini.
+</div>
+{% endif %}
+
+{% endblock %}

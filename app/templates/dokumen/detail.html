@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Detail Dokumen - {{ d.judul }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-file-earmark-text"></i> Detail Dokumen</h4>
+    <a href="{{ request.referrer or url_for('dokumen.kelola') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Kembali
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="fw-bold text-primary mb-0">{{ d.judul }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-3 text-muted">Kategori</div>
+            <div class="col-md-9"><span class="badge bg-primary">{{ d.kategori }}</span></div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 text-muted">Nomor Dokumen</div>
+            <div class="col-md-9">{{ d.nomor_dokumen or '-' }}</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 text-muted">Tanggal Dokumen</div>
+            <div class="col-md-9">{{ d.tanggal_dokumen.strftime('%d %B %Y') if d.tanggal_dokumen else '-' }}</div>
+        </div>
+        <hr>
+        <div class="mb-3">
+            <h6 class="fw-bold text-muted">Isi Dokumen (Teks Lengkap):</h6>
+            <div class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto; white-space: pre-wrap;">{{ d.isi_dokumen }}</div>
+        </div>
+        {% if d.file_path %}
+        <div class="mt-4">
+            <a href="{{ url_for('dokumen.unduh', id=d.id) }}" class="btn btn-outline-primary"><i class="bi bi-download"></i> Unduh File Asli</a>
+            <small class="text-muted ms-2">(Tersimpan di sistem)</small>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if prep %}
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white fw-bold text-muted">
+        <i class="bi bi-gear"></i> Hasil Preprocessing Dokumen
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-12">
+                <label class="text-muted small">Teks Bersih (Hasil Akhir):</label>
+                <div class="bg-light p-2 rounded small" style="max-height: 150px; overflow-y: auto;">
+                    {{ stemmed_text }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

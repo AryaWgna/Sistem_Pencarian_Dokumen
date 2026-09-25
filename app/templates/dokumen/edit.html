@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Edit Dokumen{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold"><i class="bi bi-pencil-square"></i> Edit Dokumen</h4>
+</div>
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form method="POST">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Judul / Perihal <span class="text-danger">*</span></label>
+                    <input type="text" name="judul" class="form-control" value="{{ dokumen.judul }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Kategori <span class="text-danger">*</span></label>
+                    <select name="kategori" class="form-select" required>
+                        {% for k in ['Surat Biasa','SPPD & Surat Perintah','Surat Keputusan','Surat Keterangan','Nota Dinas','Surat Edaran','Laporan','Surat Pengumuman','Dokumen Kepegawaian'] %}
+                        <option {{ 'selected' if dokumen.kategori == k }}>{{ k }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Nomor Dokumen</label>
+                    <input type="text" name="nomor_dokumen" class="form-control" value="{{ dokumen.nomor_dokumen or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Jenis Surat</label>
+                    <input type="text" name="jenis_surat" class="form-control" value="{{ dokumen.jenis_surat or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Tanggal Dokumen</label>
+                    <input type="date" name="tanggal_dokumen" class="form-control" value="{{ dokumen.tanggal_dokumen.strftime('%Y-%m-%d') if dokumen.tanggal_dokumen else '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Pengirim / Tujuan</label>
+                    <input type="text" name="pengirim_tujuan" class="form-control" value="{{ dokumen.pengirim_tujuan or '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Kata Kunci</label>
+                    <input type="text" name="kata_kunci" class="form-control" value="{{ dokumen.kata_kunci or '' }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium">Isi Dokumen</label>
+                    <textarea name="isi_dokumen" class="form-control" rows="5">{{ dokumen.isi_dokumen or '' }}</textarea>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Update</button>
+                <a href="{{ url_for('dokumen.kelola') }}" class="btn btn-outline-secondary ms-2">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Tambah Dokumen{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold"><i class="bi bi-plus-circle"></i> Tambah Dokumen</h4>
+    <div class="alert alert-primary border-0 shadow-sm mt-3 d-flex align-items-center">
+        <i class="bi bi-robot fs-4 me-3"></i>
+        <div>
+            <strong>Smart Upload (100% Otomatis):</strong> Anda tidak perlu lagi menginput kategori secara manual! Dokumen yang Anda unggah akan otomatis dianalisis teksnya, lalu <b>Naïve Bayes</b> akan menebak dan menetapkan kategorinya secara otomatis berdasarkan hasil <i>training</i> sebelumnya.
+        </div>
+    </div>
+</div>
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Judul / Perihal <span class="text-danger">*</span></label>
+                    <input type="text" name="judul" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Kategori</label>
+                    <div class="alert alert-info border-0 p-2 mb-0 d-flex align-items-center text-primary bg-light-primary">
+                        <i class="bi bi-magic me-2"></i> <em>Kategori akan diprediksi & ditetapkan otomatis oleh AI</em>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Nomor Dokumen</label>
+                    <input type="text" name="nomor_dokumen" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Jenis Surat</label>
+                    <input type="text" name="jenis_surat" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Tanggal Dokumen</label>
+                    <input type="date" name="tanggal_dokumen" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Pengirim / Tujuan</label>
+                    <input type="text" name="pengirim_tujuan" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Kata Kunci</label>
+                    <input type="text" name="kata_kunci" class="form-control" placeholder="pisahkan dengan koma">
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium">Isi Dokumen</label>
+                    <textarea name="isi_dokumen" id="isiDokumen" class="form-control" rows="8" placeholder="Pilih file PDF/Word di bawah, dan isi akan terekstrak otomatis ke sini..."></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Upload File (PDF/DOCX)</label>
+                    <input type="file" name="file" id="fileUpload" class="form-control" accept=".pdf,.docx,.doc,.txt">
+                    <div id="loadingText" class="text-primary mt-2" style="display: none;">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <em>AI sedang membaca dan mengekstrak isi dokumen...</em>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Simpan</button>
+                <a href="{{ url_for('dokumen.kelola') }}" class="btn btn-outline-secondary ms-2">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('fileUpload');
+    const textarea = document.getElementById('isiDokumen');
+    const loadingText = document.getElementById('loadingText');
+
+    fileInput.addEventListener('change', function() {
+        if (!this.files || this.files.length === 0) return;
+        
+        const file = this.files[0];
+        
+        // Cek ekstensi
+        const fileName = file.name.toLowerCase();
+        if (!fileName.endsWith('.pdf') && !fileName.endsWith('.docx') && !fileName.endsWith('.doc') && !fileName.endsWith('.txt')) {
+            return;
+        }
+
+        // Siapkan Form Data
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Tampilkan loading, kosongkan textarea
+        loadingText.style.display = 'block';
+        textarea.value = '';
+        textarea.setAttribute('placeholder', 'Mohon tunggu, AI sedang mengekstrak teks...');
+
+        // Kirim ke backend
+        fetch("{{ url_for('dokumen.extract_text') }}", {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingText.style.display = 'none';
+            if (data.success) {
+                textarea.value = data.text;
+                // Opsional: Isi judul dari nama file jika masih kosong
+                const judulInput = document.querySelector('input[name="judul"]');
+                if (judulInput && !judulInput.value) {
+                    judulInput.value = file.name.replace(/\.[^/.]+$/, ""); // hapus ekstensi
+                }
+                
+                // Autofill dari RegEx NER Ringan
+                const nomorInput = document.querySelector('input[name="nomor_dokumen"]');
+                if (nomorInput && data.nomor) nomorInput.value = data.nomor;
+                
+                const tujuanInput = document.querySelector('input[name="pengirim_tujuan"]');
+                if (tujuanInput && data.tujuan) tujuanInput.value = data.tujuan;
+                
+                const tanggalInput = document.querySelector('input[name="tanggal_dokumen"]');
+                if (tanggalInput && data.tanggal) tanggalInput.value = data.tanggal;
+                
+            } else {
+                alert('Gagal mengekstrak teks: ' + data.error);
+                textarea.setAttribute('placeholder', 'Gagal mengekstrak. Silakan ketik manual.');
+            }
+        })
+        .catch(error => {
+            loadingText.style.display = 'none';
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat mengekstrak file.');
+            textarea.setAttribute('placeholder', 'Gagal mengekstrak. Silakan ketik manual.');
+        });
+    });
+});
+</script>
+{% endblock %}

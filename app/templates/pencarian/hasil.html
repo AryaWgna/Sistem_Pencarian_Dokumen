@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+{% block title %}Hasil Pencarian{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('pencarian.pencarian') }}" class="btn btn-outline-secondary btn-sm mb-2">
+        <i class="bi bi-arrow-left"></i> Pencarian Baru
+    </a>
+    <h4 class="fw-bold"><i class="bi bi-list-check"></i> Hasil Pencarian</h4>
+</div>
+
+<!-- Search Info -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p class="mb-1"><strong>Query:</strong> "{{ data.query }}"</p>
+                {% if data.corrected_query %}
+                <div class="alert alert-warning py-1 px-3 mt-1 mb-2 d-inline-block" style="font-size: 0.9em;">
+                    <i class="bi bi-lightbulb text-warning"></i> Mungkin maksud Anda: 
+                    <strong class="text-danger">{{ data.corrected_query }}</strong>
+                </div>
+                <p class="mb-1"><strong>Preprocessed:</strong> <code class="text-danger text-decoration-line-through me-2">{{ data.preprocessed_query }}</code> <i class="bi bi-arrow-right"></i> <code>{{ data.corrected_query }}</code></p>
+                {% else %}
+                <p class="mb-1"><strong>Preprocessed:</strong> <code>{{ data.preprocessed_query }}</code></p>
+                {% endif %}
+                <p class="mb-0"><strong>Kategori Prediksi (NB):</strong>
+                    <span class="badge bg-primary">{{ data.predicted_kategori }}</span>
+                    <small class="text-muted">(keyakinan: {{ "%.2f"|format(data.confidence * 100) }}%)</small>
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="mb-1"><strong>Hasil:</strong> {{ data.results_count }} dokumen</p>
+                <p class="mb-0"><strong>Response Time:</strong> {{ data.response_time_ms }} ms</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ WHITEBOX: Detail Langkah-Langkah Algoritma (Revisi #8) ═══ -->
+{% if data.steps %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-bold"><i class="bi bi-diagram-3 text-primary"></i> Detail Langkah-Langkah Algoritma (Whitebox)</span>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#whiteboxSteps">
+            <i class="bi bi-chevron-down"></i> Tampilkan / Sembunyikan
+        </button>
+    </div>
+    <div class="collapse show" id="whiteboxSteps">
+        <div class="card-body p-0">
+
+            <!-- LANGKAH 1: PREPROCESSING -->
+            <div class="border-bottom p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-secondary rounded-circle me-2" style="width:28px;height:28px;line-height:18px;">1</span>
+                    <h6 class="fw-bold mb-0">PREPROCESSING (Pembersihan Teks)</h6>
+                </div>
+                <div class="ms-4 small">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <span class="text-muted">Input Asli:</span>
+                            <div class="bg-light p-2 rounded border mt-1"><code>{{ data.steps.step1_preprocessing.input }}</code></div>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted">Output Bersih:</span>
+                            <div class="bg-success-subtle p-2 rounded border mt-1"><code class="text-success">{{ data.steps.step1_preprocessing.output }}</code></div>
+                        </div>
+                    </div>
+                    <div class="row g-2 mt-2">
+                        <div class="col-md-3">
+                            <span class="text-muted d-block">Case Folding:</span>
+                            <span class="border px-2 py-1 bg-white rounded d-inline-block mt-1 small">{{ data.steps.step1_preprocessing.case_folding }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="text-muted d-block">Tokenizing:</span>
+                            <span class="border px-2 py-1 bg-white rounded d-inline-block mt-1 small">{{ data.steps.step1_preprocessing.tokenizing }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="text-muted d-block">Filtering:</span>
+                            <span class="border px-2 py-1 bg-white rounded d-inline-block mt-1 small">{{ data.steps.step1_preprocessing.filtering }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="text-muted d-block">Stemming:</span>
+                            <span class="border px-2 py-1 bg-white rounded d-inline-block mt-1 small">{{ data.steps.step1_preprocessing.stemming }}</span>
+                        </div>
+                    </div>
+                    {% if data.steps.step1_preprocessing.corrected %}
+                    <div class="alert alert-warning py-1 px-2 mt-2 mb-0 small">
+                        <i class="bi bi-magic"></i> Koreksi ejaan: <code class="text-decoration-line-through">{{ data.steps.step1_preprocessing.output }}</code> → <code class="text-success">{{ data.steps.step1_preprocessing.corrected }}</code>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- LANGKAH 2: TF-IDF VECTORIZATION -->
+            <div class="border-bottom p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-primary rounded-circle me-2" style="width:28px;height:28px;line-height:18px;">2</span>
+                    <h6 class="fw-bold mb-0">TF-IDF VECTORIZATION</h6>
+                    <span class="badge bg-primary-subtle text-primary ms-2 small">Kamus: {{ data.steps.step2_tfidf.total_vocab }} kata</span>
+                </div>
+                <div class="ms-4">
+                    {% if data.steps.step2_tfidf.terms %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm text-center small mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-start">Term (Kata)</th>
+                                    <th>TF (Term Frequency)</th>
+                                    <th>IDF (Inverse Document Freq)</th>
+                                    <th>Bobot TF-IDF</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in data.steps.step2_tfidf.terms %}
+                                <tr>
+                                    <td class="text-start"><code>{{ t.term }}</code></td>
+                                    <td>{{ "%.4f"|format(t.tf) }}</td>
+                                    <td>{{ "%.4f"|format(t.idf) }}</td>
+                                    <td class="fw-bold text-primary">{{ "%.4f"|format(t.tfidf) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small mb-0">Tidak ada term yang dikenali dalam kamus.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- LANGKAH 3: KLASIFIKASI NAIVE BAYES -->
+            <div class="border-bottom p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-success rounded-circle me-2" style="width:28px;height:28px;line-height:18px;">3</span>
+                    <h6 class="fw-bold mb-0">KLASIFIKASI NAÏVE BAYES</h6>
+                    <span class="badge bg-success ms-2">Prediksi: {{ data.steps.step3_nb_classify.predicted }}</span>
+                    <span class="badge bg-success-subtle text-success ms-1">{{ "%.1f"|format(data.steps.step3_nb_classify.confidence * 100) }}%</span>
+                </div>
+                <div class="ms-4">
+                    {% if data.steps.step3_nb_classify.probabilities %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm text-center small mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-start">Kategori (C)</th>
+                                    <th>Prior P(C)</th>
+                                    <th>Posterior P(C|X)</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in data.steps.step3_nb_classify.probabilities %}
+                                <tr class="{{ 'table-success' if p.is_winner else '' }}">
+                                    <td class="text-start fw-medium">{{ p.kategori }}</td>
+                                    <td>{{ "%.4f"|format(p.prior) }}</td>
+                                    <td class="fw-bold">{{ "%.6f"|format(p.posterior) }}</td>
+                                    <td>
+                                        {% if p.is_winner %}
+                                        <i class="bi bi-check-circle-fill text-success"></i> <strong class="text-success">TERPILIH</strong>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- LANGKAH 4: COSINE SIMILARITY -->
+            <div class="border-bottom p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-info rounded-circle me-2" style="width:28px;height:28px;line-height:18px;">4</span>
+                    <h6 class="fw-bold mb-0">COSINE SIMILARITY (Sebelum Boost)</h6>
+                    <span class="badge bg-info-subtle text-info ms-2 small">{{ data.steps.step4_cosine.total_compared }} dokumen relevan</span>
+                </div>
+                <div class="ms-4">
+                    {% if data.steps.step4_cosine.top_results %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm small mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th>#</th>
+                                    <th class="text-start">Dokumen</th>
+                                    <th>Kategori</th>
+                                    <th>Skor Cosine</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in data.steps.step4_cosine.top_results %}
+                                <tr>
+                                    <td class="text-center">{{ loop.index }}</td>
+                                    <td class="text-start">{{ r.judul[:60] }}{% if r.judul|length > 60 %}...{% endif %}</td>
+                                    <td class="text-center"><span class="badge bg-light text-dark border">{{ r.kategori }}</span></td>
+                                    <td class="text-center fw-bold">{{ "%.4f"|format(r.score) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0"><em>Menampilkan 10 teratas dari {{ data.steps.step4_cosine.total_compared }} dokumen relevan.</em></p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- LANGKAH 5: AI BOOSTING -->
+            <div class="border-bottom p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-danger rounded-circle me-2" style="width:28px;height:28px;line-height:18px;">5</span>
+                    <h6 class="fw-bold mb-0 text-danger"><i class="bi bi-lightning"></i> AI BOOSTING (Kombinasi Algoritma)</h6>
+                </div>
+                <div class="ms-4">
+                    <div class="alert alert-light border small py-2 mb-3">
+                        <strong>Logika:</strong> Jika kategori dokumen = prediksi NB (<span class="badge bg-primary">{{ data.steps.step5_boosting.predicted_kategori }}</span>), maka skor Cosine Similarity ditambah <strong class="text-danger">+{{ data.steps.step5_boosting.boost_amount }}</strong>
+                    </div>
+                    {% if data.steps.step5_boosting.details %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm small mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th class="text-start">Dokumen</th>
+                                    <th>Kategori</th>
+                                    <th>Skor Awal</th>
+                                    <th>Boost?</th>
+                                    <th>Bonus</th>
+                                    <th>Skor Akhir</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for b in data.steps.step5_boosting.details %}
+                                <tr class="{{ 'table-success' if b.is_boosted else '' }}">
+                                    <td class="text-start">{{ b.judul[:50] }}{% if b.judul|length > 50 %}...{% endif %}</td>
+                                    <td class="text-center"><span class="badge {{ 'bg-primary' if b.is_boosted else 'bg-secondary' }}">{{ b.kategori }}</span></td>
+                                    <td class="text-center">{{ "%.4f"|format(b.score_before) }}</td>
+                                    <td class="text-center">
+                                        {% if b.is_boosted %}
+                                        <i class="bi bi-check-circle-fill text-success"></i> <strong class="text-success">YA</strong>
+                                        {% else %}
+                                        <i class="bi bi-x-circle text-muted"></i> Tidak
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if b.is_boosted %}
+                                        <strong class="text-danger">+{{ b.boost_amount }}</strong>
+                                        {% else %}
+                                        <span class="text-muted">0</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center fw-bold {{ 'text-success' if b.is_boosted else '' }}">{{ "%.4f"|format(b.score_after) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- LANGKAH 6: HASIL AKHIR -->
+            <div class="p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-dark rounded-circle me-2" style="width:28px;height:28px;line-height:18px;">6</span>
+                    <h6 class="fw-bold mb-0"><i class="bi bi-trophy text-warning"></i> RANKING AKHIR</h6>
+                    <span class="badge bg-dark ms-2">{{ data.steps.step6_final_ranking.total_results }} dokumen</span>
+                </div>
+                <div class="ms-4">
+                    {% if data.steps.step6_final_ranking.top_results %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for r in data.steps.step6_final_ranking.top_results %}
+                        <span class="badge {{ 'bg-success' if r.is_boosted else 'bg-secondary' }} py-2 px-3">
+                            #{{ r.rank }} — Dok #{{ r.doc_id }} — {{ "%.4f"|format(r.score) }}
+                            {% if r.is_boosted %}<i class="bi bi-lightning-fill text-warning ms-1"></i>{% endif %}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- TF-IDF Details -->
+{% if data.tfidf_details %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-calculator"></i> Bobot TF-IDF Query</span>
+    </div>
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+            {% for term, score in data.tfidf_details.items() %}
+            <span class="badge bg-light text-dark border">{{ term }}: <strong>{{ score }}</strong></span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- NB Category Probabilities -->
+{% if data.category_probs %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-diagram-3"></i> Probabilitas Naïve Bayes per Kategori</span>
+    </div>
+    <div class="card-body">
+        {% for cat, prob in data.category_probs.items()|sort(attribute='1', reverse=true) %}
+        <div class="d-flex align-items-center mb-2">
+            <span class="me-2" style="min-width:180px"><small>{{ cat }}</small></span>
+            <div class="progress flex-grow-1" style="height:20px">
+                <div class="progress-bar {{ 'bg-primary' if cat == data.predicted_kategori else 'bg-secondary' }}"
+                     style="width:{{ (prob * 100)|round(1) }}%">{{ "%.1f"|format(prob * 100) }}%</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Search Results -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white fw-bold">
+        <i class="bi bi-list-ol"></i> Dokumen Terranking (Cosine Similarity)
+    </div>
+    <div class="card-body p-0">
+        {% if data.results %}
+        <div class="list-group list-group-flush">
+            {% for r in data.results %}
+            <div class="list-group-item p-3">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center mb-1">
+                            <span class="badge bg-dark me-2">#{{ loop.index }}</span>
+                            <h6 class="fw-bold mb-0">{{ r.dokumen.judul if r.dokumen else 'Dokumen #' ~ r.dokumen_id }}</h6>
+                            {% if r.is_boosted %}
+                            <span class="badge bg-warning text-dark ms-2 small"><i class="bi bi-lightning-fill"></i> AI Boosted</span>
+                            {% endif %}
+                        </div>
+                        {% if r.dokumen %}
+                        <div class="mt-1">
+                            <span class="badge bg-primary-subtle text-primary">{{ r.dokumen.kategori }}</span>
+                            {% if r.dokumen.nomor_dokumen %}
+                            <small class="text-muted ms-2">{{ r.dokumen.nomor_dokumen }}</small>
+                            {% endif %}
+                            {% if r.dokumen.tanggal_dokumen %}
+                            <small class="text-muted ms-2"><i class="bi bi-calendar"></i> {{ r.dokumen.tanggal_dokumen.strftime('%d/%m/%Y') }}</small>
+                            {% endif %}
+                            <a href="{{ url_for('dokumen.detail', id=r.dokumen.id) }}" class="btn btn-sm btn-link py-0 ms-2 text-decoration-none">Lihat Detail <i class="bi bi-arrow-right"></i></a>
+                            {% if r.dokumen.file_path %}
+                            <a href="{{ url_for('dokumen.unduh', id=r.dokumen.id) }}" class="btn btn-sm btn-outline-primary py-0 px-2 ms-2"><i class="bi bi-download"></i> Unduh File Asli</a>
+                            {% endif %}
+                        </div>
+                        {% if r.dokumen.isi_dokumen %}
+                        <p class="text-muted small mt-1 mb-0">{{ r.dokumen.isi_dokumen[:200] }}{{ '...' if r.dokumen.isi_dokumen|length > 200 }}</p>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="text-end ms-3" style="min-width: 120px;">
+                        <div class="mb-1">
+                            <span class="badge {{ 'bg-success' if r.similarity_score >= 0.5 else 'bg-warning text-dark' if r.similarity_score >= 0.2 else 'bg-secondary' }}">
+                                Tingkat Relevansi
+                            </span>
+                        </div>
+                        <div class="fw-bold text-primary" style="font-size:1.3em" title="Skor: {{ r.similarity_score }}">
+                            {{ (r.similarity_score * 100)|round(1) }}%
+                        </div>
+                        <div class="progress mt-1" style="height: 5px;">
+                            <div class="progress-bar {{ 'bg-success' if r.similarity_score >= 0.5 else 'bg-warning' if r.similarity_score >= 0.2 else 'bg-secondary' }}" role="progressbar" style="width: {{ r.similarity_score * 100 }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
+            <h5 class="mt-3 fw-bold">Tidak ada dokumen yang ditemukan</h5>
+            <p class="text-muted">Maaf, kami tidak dapat menemukan dokumen yang cocok dengan kata kunci: <b>"{{ data.query }}"</b></p>
+            <div class="bg-light p-3 rounded d-inline-block text-start mt-2 border">
+                <p class="mb-1 fw-bold text-dark"><i class="bi bi-lightbulb text-warning"></i> Saran Perbaikan:</p>
+                <ul class="mb-0 text-muted small">
+                    <li>Periksa kembali ejaan kata kunci Anda (contoh: "ijazah", bukan "ijasah").</li>
+                    <li>Gunakan kata kunci yang lebih umum atau sinonim.</li>
+                    <li>Pastikan dokumen tersebut sudah ditambahkan di menu <b>Kelola Dokumen</b>.</li>
+                </ul>
+            </div>
+            <div class="mt-4">
+                <a href="{{ url_for('pencarian.pencarian') }}" class="btn btn-primary px-4"><i class="bi bi-arrow-left"></i> Coba Kata Kunci Lain</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

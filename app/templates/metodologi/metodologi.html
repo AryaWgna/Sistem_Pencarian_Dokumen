@@ -1,0 +1,783 @@
+{% extends "base.html" %}
+{% block title %}Alur Proses & Tahapan Model - Sistem Pencarian Dokumen SLB{% endblock %}
+{% block content %}
+
+<div class="mb-4">
+    <h4 class="fw-bold"><i class="bi bi-diagram-3"></i> Alur Proses & Tahapan Model</h4>
+    <p class="text-muted">Langkah-langkah proses data, perhitungan matematis, dan tahapan model TF-IDF + Naïve Bayes</p>
+</div>
+
+{# ═══════════════════════════════════════════════
+   SECTION 1: FLOWCHART ALUR KESELURUHAN
+   ═══════════════════════════════════════════════ #}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom-0 pt-3">
+        <h5 class="fw-bold mb-0"><i class="bi bi-signpost-split text-primary"></i> Flowchart Alur Keseluruhan Sistem</h5>
+    </div>
+    <div class="card-body pt-2">
+        <p class="text-muted small mb-4">Diagram berikut menunjukkan keseluruhan alur kerja sistem — dari input dokumen hingga output hasil pencarian:</p>
+
+        <!-- Flowchart Visual -->
+        <div class="flowchart-container">
+            <!-- FASE OFFLINE -->
+            <div class="flow-phase mb-4">
+                <div class="flow-phase-label bg-primary text-white">
+                    <i class="bi bi-gear-fill"></i> FASE OFFLINE — Training Model
+                </div>
+                <div class="flow-steps">
+                    <div class="flow-step">
+                        <div class="flow-icon bg-success-subtle text-success"><i class="bi bi-file-earmark-arrow-up"></i></div>
+                        <div class="flow-label">Input Dokumen<br><small class="text-muted">CSV / Upload</small></div>
+                    </div>
+                    <div class="flow-arrow"><i class="bi bi-arrow-right"></i></div>
+                    <div class="flow-step">
+                        <div class="flow-icon bg-info-subtle text-info"><i class="bi bi-funnel"></i></div>
+                        <div class="flow-label">Preprocessing<br><small class="text-muted">4 Tahap</small></div>
+                    </div>
+                    <div class="flow-arrow"><i class="bi bi-arrow-right"></i></div>
+                    <div class="flow-step">
+                        <div class="flow-icon bg-warning-subtle text-warning"><i class="bi bi-calculator"></i></div>
+                        <div class="flow-label">TF-IDF<br><small class="text-muted">Vectorization</small></div>
+                    </div>
+                    <div class="flow-arrow"><i class="bi bi-arrow-right"></i></div>
+                    <div class="flow-step">
+                        <div class="flow-icon bg-danger-subtle text-danger"><i class="bi bi-cpu"></i></div>
+                        <div class="flow-label">Training NB<br><small class="text-muted">Belajar Pola</small></div>
+                    </div>
+                    <div class="flow-arrow"><i class="bi bi-arrow-right"></i></div>
+                    <div class="flow-step">
+                        <div class="flow-icon bg-secondary-subtle text-secondary"><i class="bi bi-save"></i></div>
+                        <div class="flow-label">Simpan<br><small class="text-muted">Model .pkl</small></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panah ke Fase Online -->
+            <div class="text-center mb-4">
+                <i class="bi bi-arrow-down-circle-fill text-primary fs-3"></i>
+                <div class="small text-muted">Model sudah siap dipakai</div>
+            </div>
+
+            <!-- FASE ONLINE -->
+            <div class="flow-phase">
+                <div class="flow-phase-label bg-success text-white">
+                    <i class="bi bi-search"></i> FASE ONLINE — Pipeline Pencarian (6 Langkah)
+                </div>
+                <div class="flow-steps flex-wrap">
+                    <div class="flow-step">
+                        <div class="flow-icon bg-primary-subtle text-primary"><i class="bi bi-keyboard"></i></div>
+                        <div class="flow-label">1. Preprocessing<br><small class="text-muted">+ Spell Check</small></div>
+                    </div>
+                    <div class="flow-arrow"><i class="bi bi-arrow-right"></i></div>
+                    <div class="flow-step">
+                        <div class="flow-icon bg-warning-subtle text-warning"><i class="bi bi-grid-3x3-gap"></i></div>
+                        <div class="flow-label">2. TF-IDF<br><small class="text-muted">Vektor Query</small></div>
+                    </div>
+                    <div class="flow-arrow"><i class="bi bi-arrow-right"></i></div>
+                    <div class="flow-step">
+                        <div class="flow-icon bg-danger-subtle text-danger"><i class="bi bi-lightbulb"></i></div>
+                        <div class="flow-label">3. Naïve Bayes<br><small class="text-muted">Prediksi Kategori</small></div>
+                    </div>
+                    <div class="flow-arrow"><i class="bi bi-arrow-right"></i></div>
+                    <div class="flow-step">
+                        <div class="flow-icon bg-info-subtle text-info"><i class="bi bi-intersect"></i></div>
+                        <div class="flow-label">4. Cosine<br><small class="text-muted">Similarity</small></div>
+                    </div>
+                    <div class="flow-arrow"><i class="bi bi-arrow-right"></i></div>
+                    <div class="flow-step">
+                        <div class="flow-icon bg-danger-subtle text-danger"><i class="bi bi-rocket-takeoff"></i></div>
+                        <div class="flow-label">5. AI Boosting<br><small class="text-muted">+1.0 Skor</small></div>
+                    </div>
+                    <div class="flow-arrow"><i class="bi bi-arrow-right"></i></div>
+                    <div class="flow-step">
+                        <div class="flow-icon bg-success-subtle text-success"><i class="bi bi-trophy"></i></div>
+                        <div class="flow-label">6. Ranking<br><small class="text-muted">Top 20</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistik Dataset -->
+        <div class="row g-3 mt-4">
+            <div class="col-md-4">
+                <div class="border rounded p-3 text-center">
+                    <div class="display-6 fw-bold text-primary">{{ total_dokumen }}</div>
+                    <small class="text-muted">Total Dokumen di Database</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="border rounded p-3 text-center">
+                    <div class="display-6 fw-bold text-success">{{ kategori_stats|length }}</div>
+                    <small class="text-muted">Jumlah Kategori</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="border rounded p-3 text-center">
+                    <div class="display-6 fw-bold text-info">{{ tfidf_data.total_vocab if tfidf_data else 0 }}</div>
+                    <small class="text-muted">Vocabulary TF-IDF</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ═══════════════════════════════════════════════
+   SECTION 2: PREPROCESSING (4 TAHAP)
+   ═══════════════════════════════════════════════ #}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom-0 pt-3">
+        <h5 class="fw-bold mb-0"><i class="bi bi-funnel text-info"></i> Tahap 1 — Preprocessing Teks (4 Sub-Tahap)</h5>
+    </div>
+    <div class="card-body">
+        <p class="text-muted small">Sebelum teks bisa diproses oleh algoritma, teks mentah harus dibersihkan melalui 4 tahap berikut:</p>
+
+        <!-- 4 Sub-tahap -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card h-100 border-top border-info border-3">
+                    <div class="card-body text-center">
+                        <div class="rounded-circle bg-info-subtle text-info d-inline-flex align-items-center justify-content-center mb-2" style="width:48px;height:48px">
+                            <i class="bi bi-type-bold fs-4"></i>
+                        </div>
+                        <h6 class="fw-bold">1. Case Folding</h6>
+                        <p class="small text-muted mb-0">Ubah ke huruf kecil, hapus angka & tanda baca, hapus spasi berlebih</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 border-top border-success border-3">
+                    <div class="card-body text-center">
+                        <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center mb-2" style="width:48px;height:48px">
+                            <i class="bi bi-scissors fs-4"></i>
+                        </div>
+                        <h6 class="fw-bold">2. Tokenizing</h6>
+                        <p class="small text-muted mb-0">Pecah kalimat menjadi kata per kata menggunakan NLTK <code>word_tokenize()</code></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 border-top border-warning border-3">
+                    <div class="card-body text-center">
+                        <div class="rounded-circle bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center mb-2" style="width:48px;height:48px">
+                            <i class="bi bi-filter fs-4"></i>
+                        </div>
+                        <h6 class="fw-bold">3. Filtering</h6>
+                        <p class="small text-muted mb-0">Hapus <em>stopwords</em> bahasa Indonesia (NLTK) & kata < 3 karakter</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 border-top border-danger border-3">
+                    <div class="card-body text-center">
+                        <div class="rounded-circle bg-danger-subtle text-danger d-inline-flex align-items-center justify-content-center mb-2" style="width:48px;height:48px">
+                            <i class="bi bi-tree fs-4"></i>
+                        </div>
+                        <h6 class="fw-bold">4. Stemming</h6>
+                        <p class="small text-muted mb-0">Ubah ke kata dasar menggunakan Sastrawi (Nazief-Adriani)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if contoh_prep %}
+        <!-- Contoh Real dari Database -->
+        <div class="alert alert-light border shadow-sm">
+            <h6 class="fw-bold mb-3"><i class="bi bi-play-circle text-primary"></i> Contoh Preprocessing Real — Dokumen: <span class="text-primary">{{ contoh_prep.doc_judul }}</span></h6>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:140px">Tahap</th>
+                            <th>Hasil</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge bg-secondary">Input Asli</span></td>
+                            <td class="small"><code>{{ contoh_prep.original }}</code></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-info">Case Folding</span></td>
+                            <td class="small"><code>{{ contoh_prep.case_folding }}</code></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-success">Tokenizing</span></td>
+                            <td class="small"><code>{{ contoh_prep.tokenizing }}</code></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-warning text-dark">Filtering</span></td>
+                            <td class="small"><code>{{ contoh_prep.filtering }}</code></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-danger">Stemming</span></td>
+                            <td class="small"><code>{{ contoh_prep.stemming }}</code></td>
+                        </tr>
+                        <tr class="table-success">
+                            <td><span class="badge bg-dark">Hasil Akhir</span></td>
+                            <td class="small fw-bold"><code>{{ contoh_prep.result }}</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{# ═══════════════════════════════════════════════
+   SECTION 3: TF-IDF VECTORIZATION
+   ═══════════════════════════════════════════════ #}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom-0 pt-3">
+        <h5 class="fw-bold mb-0"><i class="bi bi-calculator text-warning"></i> Tahap 2 — TF-IDF Vectorization</h5>
+    </div>
+    <div class="card-body">
+        <!-- Rumus -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card bg-light border-0 h-100">
+                    <div class="card-body text-center">
+                        <h6 class="fw-bold text-info">TF (Term Frequency)</h6>
+                        <div class="formula-box">
+                            TF(t,d) = <sup>jumlah kemunculan t di d</sup>&frasl;<sub>total term di d</sub>
+                        </div>
+                        <p class="small text-muted mt-2 mb-0">Seberapa sering kata muncul di 1 dokumen</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-light border-0 h-100">
+                    <div class="card-body text-center">
+                        <h6 class="fw-bold text-success">IDF (Inverse Document Freq)</h6>
+                        <div class="formula-box">
+                            IDF(t) = log(<sup>N</sup>&frasl;<sub>df(t)</sub>) + 1
+                        </div>
+                        <p class="small text-muted mt-2 mb-0">Seberapa langka kata di seluruh koleksi<br>(N = {{ total_dokumen }} dokumen)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-light border-0 h-100">
+                    <div class="card-body text-center">
+                        <h6 class="fw-bold text-primary">TF-IDF (Bobot Akhir)</h6>
+                        <div class="formula-box">
+                            TF-IDF(t,d) = TF(t,d) × IDF(t)
+                        </div>
+                        <p class="small text-muted mt-2 mb-0">Kata yang sering di 1 dokumen tapi jarang di dokumen lain = bobot tinggi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if tfidf_data %}
+        <div class="row g-3">
+            <!-- Parameter Model -->
+            <div class="col-md-4">
+                <div class="card border-start border-primary border-4 h-100">
+                    <div class="card-body">
+                        <h6 class="fw-bold"><i class="bi bi-sliders"></i> Parameter Model TF-IDF</h6>
+                        <table class="table table-sm small mb-0">
+                            <tr><td class="text-muted">Library</td><td class="fw-bold">scikit-learn TfidfVectorizer</td></tr>
+                            <tr><td class="text-muted">Max Features</td><td class="fw-bold">{{ tfidf_data.max_features }}</td></tr>
+                            <tr><td class="text-muted">Total Vocabulary</td><td class="fw-bold">{{ tfidf_data.total_vocab }} kata</td></tr>
+                            <tr><td class="text-muted">Ukuran Matriks</td><td class="fw-bold">{{ tfidf_data.matrix_shape[0] }} × {{ tfidf_data.matrix_shape[1] }}</td></tr>
+                            <tr><td class="text-muted">Penyimpanan</td><td class="fw-bold">tfidf_vectorizer.pkl (joblib)</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- Kata Paling Khas (IDF Tinggi) -->
+            <div class="col-md-4">
+                <div class="card border-start border-success border-4 h-100">
+                    <div class="card-body">
+                        <h6 class="fw-bold"><i class="bi bi-star"></i> Kata Paling Khas <small class="text-muted">(IDF Tinggi)</small></h6>
+                        <table class="table table-sm small mb-0">
+                            <thead><tr><th>Term</th><th class="text-end">IDF</th></tr></thead>
+                            <tbody>
+                            {% for t in tfidf_data.top_terms[:10] %}
+                                <tr><td><code>{{ t.term }}</code></td><td class="text-end fw-bold">{{ t.idf }}</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- Kata Paling Umum (IDF Rendah) -->
+            <div class="col-md-4">
+                <div class="card border-start border-warning border-4 h-100">
+                    <div class="card-body">
+                        <h6 class="fw-bold"><i class="bi bi-chat-dots"></i> Kata Paling Umum <small class="text-muted">(IDF Rendah)</small></h6>
+                        <table class="table table-sm small mb-0">
+                            <thead><tr><th>Term</th><th class="text-end">IDF</th></tr></thead>
+                            <tbody>
+                            {% for t in tfidf_data.common_terms[:10] %}
+                                <tr><td><code>{{ t.term }}</code></td><td class="text-end fw-bold">{{ t.idf }}</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{# ═══════════════════════════════════════════════
+   SECTION 4: MULTINOMIAL NAÏVE BAYES
+   ═══════════════════════════════════════════════ #}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom-0 pt-3">
+        <h5 class="fw-bold mb-0"><i class="bi bi-cpu text-danger"></i> Tahap 3 — Klasifikasi Multinomial Naïve Bayes</h5>
+    </div>
+    <div class="card-body">
+        <!-- Rumus Bayes -->
+        <div class="alert alert-light border shadow-sm mb-4">
+            <h6 class="fw-bold text-center mb-3">Rumus Teorema Bayes</h6>
+            <div class="text-center mb-3">
+                <div class="formula-box formula-lg">
+                    P(kategori | dokumen) = <sup>P(dokumen | kategori) × P(kategori)</sup>&frasl;<sub>P(dokumen)</sub>
+                </div>
+            </div>
+            <div class="row g-2 small">
+                <div class="col-md-4">
+                    <div class="bg-white rounded p-2 border">
+                        <strong class="text-primary">P(kategori)</strong> = <em>Prior</em><br>
+                        <span class="text-muted">Peluang awal kategori dari data latih</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="bg-white rounded p-2 border">
+                        <strong class="text-success">P(dokumen | kategori)</strong> = <em>Likelihood</em><br>
+                        <span class="text-muted">Peluang kata muncul pada kategori tersebut</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="bg-white rounded p-2 border">
+                        <strong class="text-danger">P(kategori | dokumen)</strong> = <em>Posterior</em><br>
+                        <span class="text-muted">Peluang akhir: kategori paling cocok?</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if nb_data %}
+        <div class="row g-3">
+            <!-- Parameter Model NB -->
+            <div class="col-md-5">
+                <div class="card border-start border-danger border-4 h-100">
+                    <div class="card-body">
+                        <h6 class="fw-bold"><i class="bi bi-sliders"></i> Parameter Model Naïve Bayes</h6>
+                        <table class="table table-sm small mb-3">
+                            <tr><td class="text-muted">Algoritma</td><td class="fw-bold">Multinomial Naïve Bayes</td></tr>
+                            <tr><td class="text-muted">Library</td><td class="fw-bold">scikit-learn MultinomialNB</td></tr>
+                            <tr><td class="text-muted">Alpha (Laplace Smoothing)</td><td class="fw-bold">{{ nb_data.alpha }}</td></tr>
+                            <tr><td class="text-muted">fit_prior</td><td class="fw-bold">{{ 'True' if nb_data.fit_prior else 'False' }}</td></tr>
+                            <tr><td class="text-muted">Jumlah Kelas</td><td class="fw-bold">{{ nb_data.total_classes }} kategori</td></tr>
+                            <tr><td class="text-muted">Penyimpanan</td><td class="fw-bold">naive_bayes_model.pkl (joblib)</td></tr>
+                        </table>
+                        <div class="alert alert-info small mb-0">
+                            <i class="bi bi-info-circle"></i> <strong>alpha=1.0</strong>: Laplace Smoothing untuk mencegah probabilitas nol. <strong>fit_prior=False</strong>: Semua kategori dianggap berpeluang sama agar kategori mayoritas tidak mendominasi.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Prior Probabilities -->
+            <div class="col-md-7">
+                <div class="card border-start border-success border-4 h-100">
+                    <div class="card-body">
+                        <h6 class="fw-bold"><i class="bi bi-pie-chart"></i> Probabilitas Prior per Kategori <small class="text-muted">(dari Data Latih)</small></h6>
+                        {% for cls in nb_data.classes %}
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span class="fw-medium">{{ cls.kategori }}</span>
+                                <span class="fw-bold">{{ cls.prior_pct }}%</span>
+                            </div>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar {% if loop.index == 1 %}bg-primary{% elif loop.index == 2 %}bg-success{% elif loop.index == 3 %}bg-info{% elif loop.index == 4 %}bg-warning{% else %}bg-secondary{% endif %}" 
+                                     style="width: {{ cls.prior_pct }}%">
+                                    {{ cls.prior_pct }}%
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{# ═══════════════════════════════════════════════
+   SECTION 5: COSINE SIMILARITY + AI BOOSTING
+   ═══════════════════════════════════════════════ #}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom-0 pt-3">
+        <h5 class="fw-bold mb-0"><i class="bi bi-intersect text-success"></i> Tahap 4 & 5 — Cosine Similarity + AI Boosting</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <!-- Cosine Similarity -->
+            <div class="col-md-6">
+                <div class="card bg-light border-0 h-100">
+                    <div class="card-body">
+                        <h6 class="fw-bold text-info"><i class="bi bi-intersect"></i> Langkah 4: Cosine Similarity</h6>
+                        <div class="formula-box my-3">
+                            CosSim(A,B) = <sup>A · B</sup>&frasl;<sub>||A|| × ||B||</sub>
+                        </div>
+                        <ul class="small mb-0">
+                            <li><strong>A</strong> = Vektor TF-IDF query pengguna</li>
+                            <li><strong>B</strong> = Vektor TF-IDF setiap dokumen di database</li>
+                            <li>Skor berkisar <strong>0</strong> (tidak mirip) hingga <strong>1</strong> (identik)</li>
+                            <li>Dihitung terhadap <strong>{{ total_dokumen }}</strong> dokumen sekaligus</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- AI Boosting -->
+            <div class="col-md-6">
+                <div class="card border-0 h-100" style="background: linear-gradient(135deg, #fff5f5, #fff);">
+                    <div class="card-body">
+                        <h6 class="fw-bold text-danger"><i class="bi bi-rocket-takeoff"></i> Langkah 5: AI Boosting <span class="badge bg-danger">INTI KOMBINASI</span></h6>
+                        <div class="alert alert-danger border-0 shadow-sm small mb-3">
+                            <strong>Ini adalah inti dari "Optimasi Kombinasi TF-IDF dan Naïve Bayes"</strong> — menjawab judul skripsi!
+                        </div>
+                        <div class="bg-white rounded p-3 border mb-3">
+                            <p class="small mb-2">Rumus skor akhir:</p>
+                            <code class="d-block text-center" style="font-size: 0.95rem;">
+                                JIKA kategori_dokumen == prediksi_NB:<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;final_score = cosine_score <strong class="text-danger">+ 1.0</strong><br>
+                                SELAINNYA:<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;final_score = cosine_score
+                            </code>
+                        </div>
+                        <p class="small text-muted mb-0">
+                            <i class="bi bi-lightbulb text-warning"></i> <strong>Efek:</strong> Dokumen yang relevan secara konten (cosine tinggi) DAN sekategori dengan prediksi NB otomatis naik ke ranking teratas.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Langkah 6 -->
+        <div class="alert alert-success border-0 shadow-sm mt-3">
+            <h6 class="fw-bold"><i class="bi bi-trophy"></i> Langkah 6: Ranking Akhir</h6>
+            <p class="small mb-0">Semua dokumen diurutkan berdasarkan <strong>final_score</strong> (tertinggi di atas), lalu ditampilkan <strong>top 20</strong> hasil kepada pengguna. Dokumen yang mendapat boost ditandai badge <span class="badge bg-danger">AI Boosted</span>.</p>
+        </div>
+    </div>
+</div>
+
+{# ═══════════════════════════════════════════════
+   SECTION 6: DEMO INTERAKTIF
+   ═══════════════════════════════════════════════ #}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom-0 pt-3">
+        <h5 class="fw-bold mb-0"><i class="bi bi-play-circle text-primary"></i> Demo Interaktif — Lihat Semua Tahap Secara Real-Time</h5>
+    </div>
+    <div class="card-body">
+        <p class="text-muted small">Masukkan teks apapun, lalu tekan <strong>Proses</strong> untuk melihat bagaimana sistem mengolah teks tersebut tahap demi tahap:</p>
+
+        <div class="input-group mb-3 shadow-sm rounded">
+            <input type="text" id="demoInput" class="form-control border-0 px-4 py-3" 
+                   placeholder="Contoh: Surat Keputusan Pengangkatan Guru Pendamping Tahun 2024" 
+                   style="font-size: 1rem;">
+            <button class="btn btn-primary px-4 fw-bold" type="button" id="demoBtn" onclick="runDemo()">
+                <i class="bi bi-play-fill me-1"></i> Proses
+            </button>
+        </div>
+
+        <!-- Loading -->
+        <div id="demoLoading" class="text-center py-4 d-none">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2">Memproses...</p>
+        </div>
+
+        <!-- Hasil Demo -->
+        <div id="demoResult" class="d-none">
+            <!-- Step 1: Preprocessing -->
+            <div class="card border-start border-info border-4 mb-3">
+                <div class="card-body">
+                    <h6 class="fw-bold"><span class="badge bg-info me-1">Langkah 1</span> Preprocessing</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered small mb-0">
+                            <tbody>
+                                <tr><td style="width:130px"><span class="badge bg-secondary">Input Asli</span></td><td><code id="res-original"></code></td></tr>
+                                <tr><td><span class="badge bg-info">Case Folding</span></td><td><code id="res-casefolding"></code></td></tr>
+                                <tr><td><span class="badge bg-success">Tokenizing</span></td><td><code id="res-tokenizing"></code></td></tr>
+                                <tr><td><span class="badge bg-warning text-dark">Filtering</span></td><td><code id="res-filtering"></code></td></tr>
+                                <tr><td><span class="badge bg-danger">Stemming</span></td><td><code id="res-stemming"></code></td></tr>
+                                <tr class="table-success"><td><span class="badge bg-dark">Hasil Akhir</span></td><td class="fw-bold"><code id="res-result"></code></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: TF-IDF -->
+            <div class="card border-start border-warning border-4 mb-3">
+                <div class="card-body">
+                    <h6 class="fw-bold"><span class="badge bg-warning text-dark me-1">Langkah 2</span> Skor TF-IDF per Term</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered text-center small mb-0">
+                            <thead class="table-light">
+                                <tr><th>Term</th><th>TF</th><th>IDF</th><th>TF-IDF</th></tr>
+                            </thead>
+                            <tbody id="res-tfidf"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Naïve Bayes -->
+            <div class="card border-start border-danger border-4 mb-3">
+                <div class="card-body">
+                    <h6 class="fw-bold"><span class="badge bg-danger me-1">Langkah 3</span> Klasifikasi Naïve Bayes</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 text-center">
+                                <small class="text-muted d-block">Prediksi Kategori</small>
+                                <span class="fw-bold fs-5 text-primary" id="res-predicted">-</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 text-center">
+                                <small class="text-muted d-block">Confidence</small>
+                                <span class="fw-bold fs-5 text-success" id="res-confidence">-</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                             <div class="border rounded p-3 text-center">
+                                <small class="text-muted d-block">Status</small>
+                                <span class="fw-bold fs-5" id="res-status">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h6 class="small fw-bold">Probabilitas Posterior per Kategori:</h6>
+                        <div id="res-nb-bars"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty state -->
+        <div id="demoEmpty" class="text-center py-4">
+            <i class="bi bi-lightbulb display-4 text-muted"></i>
+            <p class="text-muted mt-2">Masukkan teks di atas dan tekan <strong>Proses</strong> untuk memulai demo</p>
+        </div>
+    </div>
+</div>
+
+{# ═══════════════════════════════════════════════
+   CUSTOM STYLES
+   ═══════════════════════════════════════════════ #}
+<style>
+/* Flowchart */
+.flowchart-container {
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa, #fff);
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+}
+.flow-phase {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    overflow: hidden;
+}
+.flow-phase-label {
+    padding: 10px 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.flow-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.flow-step {
+    text-align: center;
+    min-width: 90px;
+}
+.flow-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    margin-bottom: 6px;
+    transition: transform 0.2s;
+}
+.flow-step:hover .flow-icon {
+    transform: scale(1.15);
+}
+.flow-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+.flow-arrow {
+    color: #adb5bd;
+    font-size: 1.2rem;
+}
+
+/* Formula */
+.formula-box {
+    font-family: 'Cambria Math', 'Times New Roman', serif;
+    font-size: 1.1rem;
+    padding: 12px;
+    background: #fff;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    display: inline-block;
+}
+.formula-lg {
+    font-size: 1.3rem;
+    padding: 16px 24px;
+}
+
+/* Demo result animation */
+#demoResult .card {
+    animation: fadeInUp 0.4s ease-out;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+#demoResult .card:nth-child(2) { animation-delay: 0.15s; }
+#demoResult .card:nth-child(3) { animation-delay: 0.3s; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .flow-steps { gap: 4px; }
+    .flow-step { min-width: 60px; }
+    .flow-icon { width: 38px; height: 38px; font-size: 1rem; }
+    .flow-label { font-size: 0.65rem; }
+    .flow-arrow { font-size: 0.9rem; }
+    .formula-box { font-size: 0.85rem; padding: 8px; }
+    .formula-lg { font-size: 1rem; }
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function runDemo() {
+    const input = document.getElementById('demoInput').value.trim();
+    if (!input) {
+        Swal.fire({ icon: 'warning', title: 'Teks kosong', text: 'Silakan masukkan teks terlebih dahulu.', confirmButtonColor: '#0f4c81' });
+        return;
+    }
+
+    const btn = document.getElementById('demoBtn');
+    const loading = document.getElementById('demoLoading');
+    const result = document.getElementById('demoResult');
+    const empty = document.getElementById('demoEmpty');
+
+    // Show loading
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Memproses...';
+    loading.classList.remove('d-none');
+    result.classList.add('d-none');
+    empty.classList.add('d-none');
+
+    try {
+        const response = await fetch('{{ url_for("metodologi.demo_proses") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: input })
+        });
+
+        if (!response.ok) throw new Error('Gagal memproses');
+        const data = await response.json();
+
+        // Populate preprocessing
+        document.getElementById('res-original').textContent = data.preprocessing.original;
+        document.getElementById('res-casefolding').textContent = data.preprocessing.case_folding;
+        document.getElementById('res-tokenizing').textContent = data.preprocessing.tokenizing;
+        document.getElementById('res-filtering').textContent = data.preprocessing.filtering;
+        document.getElementById('res-stemming').textContent = data.preprocessing.stemming;
+        document.getElementById('res-result').textContent = data.preprocessing.result;
+
+        // Populate TF-IDF
+        const tfidfBody = document.getElementById('res-tfidf');
+        tfidfBody.innerHTML = '';
+        if (data.tfidf && data.tfidf.length > 0) {
+            data.tfidf.forEach(t => {
+                tfidfBody.innerHTML += `<tr>
+                    <td><code>${t.term}</code></td>
+                    <td>${t.tf.toFixed(4)}</td>
+                    <td>${t.idf.toFixed(4)}</td>
+                    <td class="fw-bold">${t.tfidf.toFixed(4)}</td>
+                </tr>`;
+            });
+        } else {
+            tfidfBody.innerHTML = '<tr><td colspan="4" class="text-muted">Tidak ada term yang ditemukan di vocabulary</td></tr>';
+        }
+
+        // Populate Naïve Bayes
+        if (data.naive_bayes && data.naive_bayes.predicted) {
+            document.getElementById('res-predicted').textContent = data.naive_bayes.predicted;
+            document.getElementById('res-confidence').textContent = (data.naive_bayes.confidence * 100).toFixed(2) + '%';
+
+            const conf = data.naive_bayes.confidence;
+            const statusEl = document.getElementById('res-status');
+            if (conf >= 0.7) {
+                statusEl.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill"></i> Sangat Yakin</span>';
+            } else if (conf >= 0.4) {
+                statusEl.innerHTML = '<span class="text-warning"><i class="bi bi-exclamation-circle-fill"></i> Cukup Yakin</span>';
+            } else {
+                statusEl.innerHTML = '<span class="text-danger"><i class="bi bi-question-circle-fill"></i> Kurang Yakin</span>';
+            }
+
+            // Probability bars
+            const barsDiv = document.getElementById('res-nb-bars');
+            barsDiv.innerHTML = '';
+            const colors = ['primary', 'success', 'info', 'warning', 'secondary', 'danger'];
+            data.naive_bayes.classes.forEach((cls, i) => {
+                const pct = (cls.posterior * 100).toFixed(2);
+                const barColor = cls.is_winner ? 'success' : colors[i % colors.length];
+                barsDiv.innerHTML += `
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between small">
+                            <span>${cls.is_winner ? '<i class="bi bi-trophy-fill text-warning"></i> ' : ''}${cls.kategori}</span>
+                            <span class="fw-bold">${pct}%</span>
+                        </div>
+                        <div class="progress" style="height:16px;">
+                            <div class="progress-bar bg-${barColor}" style="width:${Math.max(pct, 1)}%">${pct > 8 ? pct + '%' : ''}</div>
+                        </div>
+                    </div>`;
+            });
+        } else {
+            document.getElementById('res-predicted').textContent = '-';
+            document.getElementById('res-confidence').textContent = '-';
+            document.getElementById('res-status').textContent = '-';
+            document.getElementById('res-nb-bars').innerHTML = '<p class="small text-muted">Model belum ter-training</p>';
+        }
+
+        // Show result
+        loading.classList.add('d-none');
+        result.classList.remove('d-none');
+
+    } catch (err) {
+        loading.classList.add('d-none');
+        empty.classList.remove('d-none');
+        Swal.fire({ icon: 'error', title: 'Gagal', text: err.message, confirmButtonColor: '#dc3545' });
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Proses';
+    }
+}
+
+// Enter key support
+document.getElementById('demoInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') runDemo();
+});
+</script>
+{% endblock %}

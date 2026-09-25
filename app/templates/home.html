@@ -1,0 +1,1095 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Sistem Pencarian Dokumen SLB{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold"><i class="bi bi-speedometer2"></i> Dashboard</h4>
+    <p class="text-muted">Selamat datang, {{ current_user.nama }}!</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon bg-primary-subtle text-primary rounded-3 p-3 me-3">
+                    <i class="bi bi-file-earmark-text display-6"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0">{{ total_dokumen }}</h2>
+                    <p class="text-muted mb-0">Total Dokumen</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon bg-success-subtle text-success rounded-3 p-3 me-3">
+                    <i class="bi bi-tags display-6"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0">{{ total_kategori }}</h2>
+                    <p class="text-muted mb-0">Kategori</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card border-0 shadow-sm h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon bg-info-subtle text-info rounded-3 p-3 me-3">
+                    <i class="bi bi-search display-6"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0">{{ total_pencarian }}</h2>
+                    <p class="text-muted mb-0">Riwayat Pencarian</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Search -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-search"></i> Pencarian Cepat</h5>
+        <form method="POST" action="{{ url_for('pencarian.pencarian') }}">
+            <div class="input-group input-group-lg">
+                <input type="text" name="query" class="form-control" placeholder="Masukkan kata kunci pencarian dokumen..." required>
+                <button class="btn btn-primary px-4" type="submit">
+                    <i class="bi bi-search"></i> Cari
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Studi Kasus & Data Fakta (Revisi #2 & #3) -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom-0 pt-3">
+        <h5 class="fw-bold mb-0"><i class="bi bi-bookmark-star text-warning"></i> Studi Kasus & Data Fakta Permasalahan</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning border-0 shadow-sm mb-4">
+            <h6 class="fw-bold"><i class="bi bi-exclamation-triangle"></i> Permasalahan Nyata di SLB</h6>
+            <p class="mb-0">Staf Tata Usaha SLB harus mengelola ratusan dokumen administratif setiap tahunnya. Ketika dokumen lama dibutuhkan secara mendadak (misal untuk akreditasi atau audit), proses pencarian manual di lemari arsip memakan waktu <strong>10–30 menit</strong> dan sering gagal karena dokumen terselip atau salah label.</p>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card border-start border-danger border-4 h-100">
+                    <div class="card-body">
+                        <h6 class="fw-bold text-danger"><i class="bi bi-x-circle"></i> Contoh Kasus: Pencarian Manual</h6>
+                        <p class="small mb-2">Saat persiapan akreditasi, staf TU diminta mencari <em>"Surat Keputusan Pengangkatan Guru Pendamping Khusus tahun 2022"</em>.</p>
+                        <ul class="small mb-0">
+                            <li>Membuka 5 lemari arsip fisik secara bergantian</li>
+                            <li>Membolak-balik ratusan map dokumen</li>
+                            <li>Dokumen ditemukan di tumpukan yang <strong>salah label</strong></li>
+                            <li>Total waktu: <strong class="text-danger">± 45 menit</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-start border-success border-4 h-100">
+                    <div class="card-body">
+                        <h6 class="fw-bold text-success"><i class="bi bi-check-circle"></i> Solusi: Sistem E-Arsip AI</h6>
+                        <p class="small mb-2">Staf TU cukup mengetik <em>"keputusan guru pendamping"</em> di kotak pencarian sistem.</p>
+                        <ul class="small mb-0">
+                            <li>TF-IDF menghitung bobot relevansi setiap dokumen</li>
+                            <li>Naive Bayes menebak kategori: <strong>"Surat Keputusan"</strong></li>
+                            <li>Dokumen yang tepat muncul di <strong>urutan #1</strong></li>
+                            <li>Total waktu: <strong class="text-success">± {{ eval_data.avg_response_time if eval_data and eval_data.avg_response_time else 50 }} milidetik</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Fakta Permasalahan -->
+        <div class="table-responsive mt-4">
+            <table class="table table-bordered align-middle text-center small">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-start">Data Fakta</th>
+                        <th>Nilai</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-start">Estimasi dokumen yang dikelola SLB per tahun</td>
+                        <td class="fw-bold">± 200 – 500 surat</td>
+                    </tr>
+                    <tr>
+                        <td class="text-start">Rata-rata waktu pencarian manual (berdasarkan observasi)</td>
+                        <td class="fw-bold text-danger">10 – 30 menit</td>
+                    </tr>
+                    <tr>
+                        <td class="text-start">Rata-rata waktu pencarian dengan sistem</td>
+                        <td class="fw-bold text-success">{{ eval_data.avg_response_time if eval_data and eval_data.avg_response_time else 50 }} ms</td>
+                    </tr>
+                    <tr>
+                        <td class="text-start">Estimasi kesalahan kategorisasi manual</td>
+                        <td class="fw-bold text-danger">± 15 – 20%</td>
+                    </tr>
+                    <tr>
+                        <td class="text-start">Akurasi klasifikasi AI (Naive Bayes)</td>
+                        <td class="fw-bold text-success">{{ "%.2f"|format(eval_data.accuracy * 100) if eval_data and eval_data.accuracy else '-' }}%</td>
+                    </tr>
+                    <tr>
+                        <td class="text-start">Total dokumen yang dilatihkan ke AI</td>
+                        <td class="fw-bold">{{ eval_data.total_data if eval_data and eval_data.total_data else total_dokumen }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Category Distribution -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3"><i class="bi bi-pie-chart"></i> Distribusi Kategori</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead><tr><th>Kategori</th><th class="text-end">Jumlah</th></tr></thead>
+                        <tbody>
+                        {% for kat, count in kategori_stats %}
+                        <tr>
+                            <td><span class="badge bg-primary-subtle text-primary">{{ kat }}</span></td>
+                            <td class="text-end fw-medium">{{ count }}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluasi Model Section -->
+    {% if eval_data %}
+    <div class="col-12 mt-4">
+        <h4 class="fw-bold mb-3"><i class="bi bi-graph-up text-primary"></i> Evaluasi Model (Naïve Bayes)</h4>
+        
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-4" id="evaluasiTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active fw-bold" id="distribusi-tab" data-bs-toggle="tab" data-bs-target="#distribusi" type="button" role="tab">Distribusi Data</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold" id="integrasi-tab" data-bs-toggle="tab" data-bs-target="#integrasi" type="button" role="tab">
+                    <i class="bi bi-diagram-3"></i> Alur Integrasi
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold" id="training-tab" data-bs-toggle="tab" data-bs-target="#training" type="button" role="tab">
+                    <i class="bi bi-cpu"></i> Proses Training
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold" id="matrix-tab" data-bs-toggle="tab" data-bs-target="#matrix" type="button" role="tab">Confusion Matrix</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold" id="perhitungan-tab" data-bs-toggle="tab" data-bs-target="#perhitungan" type="button" role="tab">Perhitungan Manual</button>
+            </li>
+            {% if eval_data.comparison %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold" id="perbandingan-tab" data-bs-toggle="tab" data-bs-target="#perbandingan" type="button" role="tab">
+                    <i class="bi bi-arrow-left-right"></i> Perbandingan
+                </button>
+            </li>
+            {% endif %}
+            {% if eval_data.test_scenarios %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold" id="pengujian-tab" data-bs-toggle="tab" data-bs-target="#pengujian" type="button" role="tab">
+                    <i class="bi bi-clipboard-check"></i> Pengujian Pencarian
+                </button>
+            </li>
+            {% endif %}
+        </ul>
+
+        <div class="tab-content" id="evaluasiTabContent">
+
+            <!-- ═══ Tab Distribusi Data (Revisi #4: Data Latih Spesifik) ═══ -->
+            <div class="tab-pane fade show active" id="distribusi" role="tabpanel">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <div class="card bg-primary text-white border-0 shadow-sm h-100">
+                            <div class="card-body text-center py-4">
+                                <h6 class="text-uppercase mb-2 text-white-50">Total Data (Dokumen)</h6>
+                                <h1 class="mb-0 fw-bold">{{ eval_data.total_data }}</h1>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white border-0 shadow-sm h-100">
+                            <div class="card-body text-center py-4">
+                                <h6 class="text-uppercase mb-2 text-white-50">Data Latih (Training) - 80%</h6>
+                                <h1 class="mb-0 fw-bold">{{ eval_data.train_data }}</h1>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-info text-white border-0 shadow-sm h-100">
+                            <div class="card-body text-center py-4">
+                                <h6 class="text-uppercase mb-2 text-white-50">Data Uji (Testing) - 20%</h6>
+                                <h1 class="mb-0 fw-bold">{{ eval_data.test_data }}</h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-light border border-info border-start-5 border-end-0 border-top-0 border-bottom-0 shadow-sm small text-muted mb-4">
+                    <h6 class="fw-bold text-dark"><i class="bi bi-lightbulb text-warning"></i> Mengapa Data Harus Dipisah?</h6>
+                    <p class="mb-0">Dalam <em>Machine Learning</em>, komputer diajari layaknya manusia. <strong>Data Latih (80%)</strong> ibarat <em>"Buku Pelajaran"</em> agar komputer bisa mengenali dan menghafal pola kata dari setiap kategori surat. Sedangkan <strong>Data Uji (20%)</strong> ibarat <em>"Ujian Nasional"</em>, di mana komputer dites kemampuannya menebak kategori surat baru yang label aslinya kita sembunyikan. Tebakan dari ujian inilah yang menghasilkan nilai <strong>Akurasi</strong>.</p>
+                </div>
+
+                <!-- Mapping Kategori (Revisi #4) -->
+                {% if eval_data.category_mapping %}
+                {% endif %}
+
+                <!-- Detail Data Latih per Kategori (Revisi #4) -->
+                {% if eval_data.sample_docs %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold"><i class="bi bi-collection text-primary"></i> Spesifikasi Data Latih per Kategori</div>
+                    <div class="card-body">
+                        <p class="small text-muted mb-3">Berikut adalah jenis-jenis dokumen spesifik yang digunakan untuk melatih model AI, beserta contoh dokumennya:</p>
+                        {% for kat, docs in eval_data.sample_docs.items() %}
+                        <div class="card border mb-3">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                                <span class="fw-bold"><span class="badge bg-primary me-2">{{ kat }}</span></span>
+                                <span class="badge bg-secondary">{{ eval_data.kategori_counts[kat] if eval_data.kategori_counts else '?' }} dokumen</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm table-striped mb-0 small">
+                                    <thead><tr><th width="50">ID</th><th>Judul Dokumen</th><th>Isi (Preview)</th></tr></thead>
+                                    <tbody>
+                                        {% for d in docs %}
+                                        <tr>
+                                            <td class="text-muted">{{ d.id }}</td>
+                                            <td class="fw-medium">{{ d.judul }}</td>
+                                            <td class="text-muted" style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ d.isi_preview }}{% if d.isi_preview|length >= 120 %}...{% endif %}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if eval_data.train_docs and eval_data.test_docs %}
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-success text-white fw-bold">Daftar Dokumen Data Latih (Sebagian)</div>
+                            <div class="card-body p-0" style="max-height: 250px; overflow-y: auto;">
+                                <table class="table table-sm table-striped mb-0 text-center">
+                                    <thead><tr><th>ID Dokumen</th><th>Kategori Aktual</th></tr></thead>
+                                    <tbody>
+                                        {% for d in eval_data.train_docs[:50] %}
+                                        <tr><td>{{ d.id }}</td><td>{{ d.kategori }}</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="card-footer text-muted small text-center">Menampilkan 50 data latih teratas...</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-info text-white fw-bold">Daftar Dokumen Data Uji (Seluruhnya)</div>
+                            <div class="card-body p-0" style="max-height: 250px; overflow-y: auto;">
+                                <table class="table table-sm table-striped mb-0 text-center">
+                                    <thead><tr><th>ID Dokumen</th><th>Kategori Aktual</th></tr></thead>
+                                    <tbody>
+                                        {% for d in eval_data.test_docs %}
+                                        <tr><td>{{ d.id }}</td><td>{{ d.kategori }}</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- ═══ Tab Alur Integrasi (Revisi #1) ═══ -->
+            <div class="tab-pane fade" id="integrasi" role="tabpanel">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-diagram-3 text-primary"></i> Diagram Alur Integrasi TF-IDF & Naïve Bayes</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small mb-4">Diagram di bawah menjelaskan bagaimana kedua algoritma <strong>diintegrasikan</strong> secara berurutan di dalam sistem pencarian.</p>
+
+                        <!-- Pipeline Diagram (HTML-based) -->
+                        <div class="position-relative">
+                            <!-- Step 1 -->
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:36px;height:36px;min-width:36px;">1</div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="card border-secondary">
+                                        <div class="card-body py-2">
+                                            <strong>Input Query Pengguna</strong>
+                                            <p class="small text-muted mb-0">Pengguna mengetik kata kunci di kotak pencarian. Contoh: <code>"Surat Keputusan Rapat Guru"</code></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ms-3 border-start border-2 ps-4 mb-3" style="margin-left:18px!important;">
+                                <i class="bi bi-arrow-down text-muted"></i>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:36px;height:36px;min-width:36px;">2</div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="card border-warning">
+                                        <div class="card-body py-2">
+                                            <strong>Preprocessing (Pembersihan Teks)</strong>
+                                            <p class="small text-muted mb-0">Teks dibersihkan melalui 4 tahap: <em>Case Folding → Tokenizing → Filtering (Stopword) → Stemming (Sastrawi)</em>. Hasil: <code>"surat putus rapat guru"</code></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ms-3 border-start border-2 ps-4 mb-3" style="margin-left:18px!important;">
+                                <i class="bi bi-arrow-down text-muted"></i>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:36px;height:36px;min-width:36px;">3</div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="card border-primary">
+                                        <div class="card-body py-2">
+                                            <strong>TF-IDF Vectorization</strong>
+                                            <span class="badge bg-primary-subtle text-primary ms-2">Algoritma #1</span>
+                                            <p class="small text-muted mb-0">Teks diubah menjadi <strong>vektor angka bobot</strong> menggunakan rumus TF-IDF. Kata unik/langka mendapat bobot tinggi (misal: <code>putus: 0.54</code>), kata umum mendapat bobot rendah. Vektor ini menjadi <strong>input</strong> untuk 2 proses selanjutnya:</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Branching -->
+                            <div class="row g-3 mb-3 ms-5">
+                                <div class="col-md-6">
+                                    <div class="ms-3 border-start border-2 border-info ps-3 mb-2"><i class="bi bi-arrow-down text-info"></i></div>
+                                    <div class="card border-info">
+                                        <div class="card-body py-2">
+                                            <strong class="text-info"><i class="bi bi-calculator"></i> 4a. Cosine Similarity</strong>
+                                            <p class="small text-muted mb-0">Vektor query dibandingkan dengan vektor seluruh dokumen di database. Menghasilkan <strong>skor kemiripan</strong> (0–1) untuk setiap dokumen.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="ms-3 border-start border-2 border-success ps-3 mb-2"><i class="bi bi-arrow-down text-success"></i></div>
+                                    <div class="card border-success">
+                                        <div class="card-body py-2">
+                                            <strong class="text-success"><i class="bi bi-cpu"></i> 4b. Naïve Bayes Classify</strong>
+                                            <span class="badge bg-success-subtle text-success ms-1">Algoritma #2</span>
+                                            <p class="small text-muted mb-0">Vektor query diumpankan ke model NB yang sudah dilatih. Menghasilkan <strong>prediksi kategori</strong> (misal: "Surat Keputusan", 78%).</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Merge -->
+                            <div class="ms-3 border-start border-2 ps-4 mb-3 text-center" style="margin-left:18px!important;">
+                                <i class="bi bi-arrow-down text-muted"></i> <span class="small text-muted">Kedua hasil digabungkan</span>
+                            </div>
+
+                            <!-- Step 5 -->
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:36px;height:36px;min-width:36px;">5</div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="card border-danger">
+                                        <div class="card-body py-2">
+                                            <strong class="text-danger"><i class="bi bi-lightning"></i> AI BOOSTING — Inti Kombinasi Algoritma</strong>
+                                            <p class="small text-muted mb-1">Jika kategori sebuah dokumen <strong>sama dengan</strong> prediksi Naïve Bayes, maka skor Cosine Similarity dokumen tersebut mendapat <strong>bonus +1.0</strong>. Efeknya:</p>
+                                            <ul class="small text-muted mb-0">
+                                                <li>Dokumen yang <em>berkategori sesuai tebakan AI</em> otomatis naik ke <strong>peringkat teratas</strong></li>
+                                                <li>Ini memastikan hasil pencarian lebih <strong>akurat dan relevan</strong> dibanding TF-IDF saja</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ms-3 border-start border-2 ps-4 mb-3" style="margin-left:18px!important;">
+                                <i class="bi bi-arrow-down text-muted"></i>
+                            </div>
+
+                            <!-- Step 6 -->
+                            <div class="d-flex align-items-center">
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:36px;height:36px;min-width:36px;">6</div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="card border-success bg-success-subtle">
+                                        <div class="card-body py-2">
+                                            <strong class="text-success"><i class="bi bi-trophy"></i> Hasil Akhir: Ranking Dokumen</strong>
+                                            <p class="small mb-0">Dokumen diurutkan berdasarkan skor akhir (yang sudah di-boost). Pengguna melihat dokumen paling relevan di urutan paling atas.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Penjelasan Mengapa Kombinasi Lebih Baik -->
+                        <div class="alert alert-primary mt-4 mb-0">
+                            <h6 class="fw-bold"><i class="bi bi-info-circle"></i> Mengapa Kombinasi Lebih Baik?</h6>
+                            <div class="row small">
+                                <div class="col-md-4">
+                                    <strong>TF-IDF Saja:</strong> Hanya bisa mengurutkan berdasarkan kemiripan kata, tapi <em>tidak bisa menebak kategori</em>. Dokumen yang judulnya mirip tapi kategorinya salah bisa naik ke atas.
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Naïve Bayes Saja:</strong> Hanya bisa menebak kategori, tapi <em>tidak bisa meranking</em> mana yang paling relevan di dalam kategori tersebut.
+                                </div>
+                                <div class="col-md-4">
+                                    <strong class="text-primary">Kombinasi Keduanya:</strong> TF-IDF meranking + Naïve Bayes memfilter. Hasilnya: <em>dokumen yang benar-benar relevan DAN berkategori tepat</em> selalu di urutan pertama.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ Tab Proses Training (Revisi #6) ═══ -->
+            <div class="tab-pane fade" id="training" role="tabpanel">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-cpu text-primary"></i> Proses Pelatihan Data (Training) — Step-by-Step</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-light border border-primary border-start-5 border-end-0 border-top-0 border-bottom-0 shadow-sm small text-muted mb-4">
+                            <h6 class="fw-bold text-dark"><i class="bi bi-info-circle text-primary"></i> Rasionalisasi Pemilihan 9 Kategori</h6>
+                            <p class="mb-0">Pemilihan 9 kategori dokumen pada sistem ini <strong>bukan ditentukan secara acak</strong>, melainkan merupakan representasi riil dari taksonomi arsip yang diwajibkan berdasarkan pedoman administrasi tata usaha di SLB. Penelitian ini bertujuan untuk memecahkan masalah <em>real-world</em>, sehingga sistem harus mengakomodasi seluruh keragaman kategori surat (mulai dari SK hingga Surat Biasa) yang secara faktual dikelola staf setiap harinya.</p>
+                        </div>
+
+                        <p class="text-muted small mb-4">Berikut adalah langkah-langkah detail bagaimana data dilatihkan ke dalam model AI sehingga sistem bisa menebak kategori dan meranking dokumen.</p>
+
+                        <!-- Step 1 -->
+                        <div class="card border mb-3">
+                            <div class="card-header bg-light py-2">
+                                <span class="badge bg-primary me-2">Langkah 1</span> <strong>Pengumpulan Data (Data Collection)</strong>
+                            </div>
+                            <div class="card-body small">
+                                <p class="mb-2">Data dikumpulkan dari arsip fisik Tata Usaha SLB, kemudian didigitalisasi dan disimpan dalam format CSV (<code>dokumen_final.csv</code>).</p>
+                                <div class="bg-light p-2 rounded border font-monospace small">
+                                    Total: <strong>{{ eval_data.total_data }}</strong> dokumen | 9 Kategori | Sumber: Arsip TU SLB
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="card border mb-3">
+                            <div class="card-header bg-light py-2">
+                                <span class="badge bg-warning text-dark me-2">Langkah 2</span> <strong>Preprocessing (Pembersihan Teks)</strong>
+                            </div>
+                            <div class="card-body small">
+                                <p class="mb-2">Setiap dokumen melewati 4 tahap pembersihan teks otomatis:</p>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm mb-3">
+                                        <thead class="table-light"><tr><th>Tahap</th><th>Proses</th><th>Contoh</th></tr></thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="fw-bold">1. Case Folding</td>
+                                                <td>Mengubah semua huruf menjadi huruf kecil, menghapus angka & tanda baca</td>
+                                                <td><code>"SK Pengangkatan No. 123/2023"</code> → <code>"sk pengangkatan no"</code></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">2. Tokenizing</td>
+                                                <td>Memecah kalimat menjadi kata per kata (token) menggunakan NLTK</td>
+                                                <td><code>"sk pengangkatan no"</code> → <code>["sk", "pengangkatan", "no"]</code></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">3. Filtering</td>
+                                                <td>Menghapus <em>stopwords</em> (kata tidak penting) & kata pendek (&lt;3 huruf)</td>
+                                                <td><code>["sk", "pengangkatan", "no"]</code> → <code>["pengangkatan"]</code></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">4. Stemming</td>
+                                                <td>Mengubah kata ke bentuk dasar (Algoritma Nazief-Adriani)</td>
+                                                <td><code>["pengangkatan"]</code> → <code>["angkat"]</code></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="card border mb-3">
+                            <div class="card-header bg-light py-2">
+                                <span class="badge bg-info me-2">Langkah 3</span> <strong>TF-IDF Vectorization</strong>
+                            </div>
+                            <div class="card-body small">
+                                <p class="mb-2">Teks dokumen diubah menjadi <strong>vektor angka</strong> menggunakan TF-IDF. Menghasilkan matriks sparse yang merepresentasikan bobot tiap kata.</p>
+                            </div>
+                        </div>
+
+                        <!-- Step 4 (BARU: Oversampling) -->
+                        <div class="card border mb-3 border-danger">
+                            <div class="card-header bg-danger-subtle py-2">
+                                <span class="badge bg-danger me-2">Langkah 4</span> <strong class="text-danger"><i class="bi bi-shield-exclamation"></i> Penanganan Imbalanced Data (Oversampling)</strong>
+                            </div>
+                            <div class="card-body small">
+                                <p class="mb-2">Karena 9 kategori surat di SLB jumlahnya sangat bervariasi (misal: "Surat Umum" sangat banyak, sementara "Surat Biasa" sangat sedikit), data mengalami fenomena <em>Imbalanced Dataset</em>. Jika dibiarkan, model akan selalu memihak kategori mayoritas (muncul angka 0 di confusion matrix minoritas).</p>
+                                <p class="mb-2"><strong>Solusi:</strong> Sistem menerapkan teknik <strong>Random Oversampling</strong> pada matriks TF-IDF Data Latih. Kategori yang kekurangan data akan diduplikasi secara acak hingga jumlahnya seimbang dengan kategori terbanyak.</p>
+                                <div class="bg-white p-2 rounded border text-center font-monospace mb-0">
+                                    Data Latih Awal: <strong>{{ eval_data.train_data }}</strong> dokumen <br>
+                                    <i class="bi bi-arrow-down text-danger"></i><br>
+                                    Setelah Oversampling: <strong>{{ eval_data.train_data_balanced if eval_data.train_data_balanced else '?' }}</strong> sampel dokumen latih (Seimbang)
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 5 -->
+                        <div class="card border mb-3">
+                            <div class="card-header bg-light py-2">
+                                <span class="badge bg-success me-2">Langkah 5</span> <strong>Training Naïve Bayes</strong>
+                            </div>
+                            <div class="card-body small">
+                                <p class="mb-2">Matriks TF-IDF yang <strong>sudah diseimbangkan (balanced)</strong> diumpankan ke algoritma <strong>Multinomial Naïve Bayes</strong> untuk mempelajari probabilitas Prior & Likelihood.</p>
+                            </div>
+                        </div>
+
+                        <!-- Step 6 -->
+                        <div class="card border mb-0">
+                            <div class="card-header bg-light py-2">
+                                <span class="badge bg-dark me-2">Langkah 6</span> <strong>Penyimpanan Model (Model Persistence)</strong>
+                            </div>
+                            <div class="card-body small">
+                                <p class="mb-0">Hasil training disimpan ke file <code>.pkl</code> menggunakan Joblib.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ Tab Confusion Matrix ═══ -->
+            <div class="tab-pane fade" id="matrix" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white fw-bold"><i class="bi bi-table"></i> Confusion Matrix (Data Uji)</div>
+                            <div class="card-body table-responsive">
+                                <table class="table table-bordered table-sm text-center align-middle mb-4">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th rowspan="2" class="align-middle">Kategori Asli (Aktual)</th>
+                                            <th colspan="{{ eval_data.labels|length }}">Kategori Prediksi (Sistem)</th>
+                                        </tr>
+                                        <tr>
+                                            {% for lbl in eval_data.labels %}
+                                            <th class="small">{{ lbl }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in eval_data.cm_data %}
+                                        <tr>
+                                            <th class="table-light small text-start">{{ row.true_label }}</th>
+                                            {% for p in row.preds %}
+                                            <td class="{{ 'bg-success text-white fw-bold' if p.is_correct and p.value > 0 else 'bg-danger text-white' if not p.is_correct and p.value > 0 else '' }}">
+                                                {{ p.value }}
+                                            </td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+
+                                <!-- Penjabaran Rumus -->
+                                <div class="bg-light p-3 rounded border">
+                                    <h6 class="fw-bold text-muted mb-3"><i class="bi bi-info-circle"></i> Penjabaran Parameter Matriks (Multi-class)</h6>
+                                    <div class="row small text-muted">
+                                        <div class="col-md-6 mb-2">
+                                            <strong class="text-success">True Positive (TP):</strong><br>
+                                            Sel/angka yang berada di diagonal utama (hijau). Menunjukkan jumlah dokumen yang diprediksi <b>Benar</b> pada kategori tersebut.
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <strong class="text-danger">False Positive (FP):</strong><br>
+                                            Jumlah angka pada <b>kolom</b> vertikal (selain TP). Sistem menebak kategori A, padahal aslinya bukan A.
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <strong class="text-danger">False Negative (FN):</strong><br>
+                                            Jumlah angka pada <b>baris</b> horizontal (selain TP). Aslinya kategori A, tapi sistem malah menebak bukan A.
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <strong>True Negative (TN):</strong><br>
+                                            Semua angka sisa di luar baris dan kolom kelas tersebut. (Sistem benar menebak bahwa dokumen tersebut bukan kelas A).
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="text-center font-monospace mt-2">
+                                        Akurasi = (Total TP) / (Total Seluruh Data Uji)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white fw-bold"><i class="bi bi-bar-chart"></i> Metrik Kinerja</div>
+                            <div class="card-body">
+                                <div class="mb-3 text-center">
+                                    <h6 class="text-muted mb-1">Akurasi Keseluruhan</h6>
+                                    <h2 class="text-primary fw-bold mb-0">{{ (eval_data.accuracy * 100)|round(2) }}%</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ Tab Perhitungan Manual ═══ -->
+            <div class="tab-pane fade {% if manual_calc_data %}show active{% endif %}" id="perhitungan" role="tabpanel">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-calculator"></i> Uji Coba Perhitungan Algoritma</h5>
+                        <p class="text-muted small mb-3">Masukkan kata atau kalimat untuk membongkar hasil perhitungan matematis TF-IDF dan probabilitas Naïve Bayes secara *White-Box*.</p>
+                        
+                        <form method="GET" action="{{ url_for('pencarian.home') }}" class="d-flex mb-2">
+                            <input type="text" name="test_query" class="form-control me-2" placeholder="Contoh: surat tugas mengajar" required value="{{ manual_calc_data.query if manual_calc_data else '' }}">
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-gear"></i> Hitung</button>
+                        </form>
+                        
+                        {% if not manual_calc_data %}
+                        <div class="alert alert-light border-0 shadow-sm small text-muted mt-3 mb-0">
+                            <strong>Penjelasan Konsep:</strong>
+                            <ul class="mb-0 mt-1">
+                                <li><strong>TF-IDF:</strong> Rumus untuk mencari tahu seberapa "Penting" suatu kata. Kata yang sering muncul tapi langka di arsip lain (seperti "Ijazah") akan diberi skor tinggi, sedangkan kata pasaran (seperti "dan", "yang") nilainya nol.</li>
+                                <li><strong>Naïve Bayes:</strong> Algoritma cenayang yang menghitung peluang. Ia mengalikan <em>Prior</em> (peluang awal kategori) dengan <em>Likelihood</em> (peluang munculnya suatu kata pada kategori tersebut) untuk menghasilkan <em>Posterior</em> (skor akhir tebakan).</li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if manual_calc_data %}
+                <div class="d-flex justify-content-between align-items-center mb-3 d-print-none">
+                    <h5 class="fw-bold mb-0">Hasil Perhitungan Manual</h5>
+                    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm"><i class="bi bi-printer"></i> Cetak Laporan (PDF)</button>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4 print-section">
+                    <div class="card-header bg-white fw-bold">1. Preprocessing Teks</div>
+                    <div class="card-body">
+                        <p class="mb-1"><strong>Teks Asli:</strong> {{ manual_calc_data.query }}</p>
+                        <p class="mb-0"><strong>Hasil Preprocessing:</strong> <code>{{ manual_calc_data.prep_query }}</code></p>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4 print-section">
+                    <div class="card-header bg-white fw-bold">2. Perhitungan Bobot TF-IDF</div>
+                    <div class="card-body table-responsive">
+                        <div class="bg-light p-2 rounded text-center font-monospace small mb-3">Rumus: TF-IDF = TF × IDF</div>
+                        <table class="table table-bordered table-sm text-center">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Term (Kata)</th>
+                                    <th>TF (Term Frequency)</th>
+                                    <th>IDF (Inverse Doc Freq)</th>
+                                    <th>Bobot TF-IDF</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in manual_calc_data.tfidf_details %}
+                                <tr>
+                                    <td class="text-start"><code>{{ item.term }}</code></td>
+                                    <td>{{ "%.4f"|format(item.tf) }}</td>
+                                    <td>{{ "%.4f"|format(item.idf) }}</td>
+                                    <td class="fw-bold text-primary">{{ "%.4f"|format(item.tfidf) }}</td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="4" class="text-muted">Kata tidak dikenali dalam dataset pelatihan.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4 print-section">
+                    <div class="card-header bg-white fw-bold">3. Probabilitas Naïve Bayes</div>
+                    <div class="card-body table-responsive">
+                        <div class="bg-light p-2 rounded text-center font-monospace small mb-3">Rumus: P(C|X) = P(C) × ∏ P(w|C)</div>
+                        <table class="table table-bordered table-sm text-center">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Kategori (C)</th>
+                                    <th>Prior P(C)</th>
+                                    <th>Posterior / Skor Akhir P(C|X)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in manual_calc_data.nb_details %}
+                                <tr class="{% if loop.first %}table-success{% endif %}">
+                                    <td class="text-start fw-medium">{{ item.kategori }} {% if loop.first %}<i class="bi bi-check-circle-fill text-success"></i>{% endif %}</td>
+                                    <td>{{ "%.4f"|format(item.prior) }}</td>
+                                    <td class="fw-bold">{{ "%.8f"|format(item.posterior) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="alert alert-success mt-3 mb-0">
+                            <strong>Kesimpulan:</strong> Berdasarkan nilai Posterior tertinggi, sistem mengklasifikasikan teks ini ke dalam kategori: <strong>{{ manual_calc_data.predicted }}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <script>
+                    // Switch tab automatically if query is processed
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var triggerEl = document.querySelector('#perhitungan-tab');
+                        bootstrap.Tab.getInstance(triggerEl)?.show() || new bootstrap.Tab(triggerEl).show();
+                    });
+                </script>
+                {% endif %}
+            </div>
+
+            <!-- ═══ Tab Perbandingan Sebelum & Sesudah (Revisi #5 & #7) ═══ -->
+            {% if eval_data.comparison %}
+            <div class="tab-pane fade" id="perbandingan" role="tabpanel">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-arrow-left-right text-primary"></i> Perbandingan Akurasi: Sebelum vs Sesudah Optimasi</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-light border border-info border-start-5 border-end-0 border-top-0 border-bottom-0 shadow-sm small text-muted mb-4">
+                            <h6 class="fw-bold text-dark"><i class="bi bi-lightbulb text-warning"></i> Apa yang Diuji?</h6>
+                            <p class="mb-0">Sesuai dengan hasil Uji Ahli Sistem dan skripsi, perbandingan ini menunjukkan peningkatan efisiensi dan keakuratan dari proses <strong>Pencarian Manual (Sebelum Menggunakan Sistem)</strong> dibandingkan dengan <strong>Sistem E-Arsip Berbasis AI (Sesudah Menggunakan Sistem)</strong> di SLB.</p>
+                        </div>
+
+                        <!-- Tabel Perbandingan Proses Bisnis -->
+                        <div class="table-responsive mb-4">
+                            <table class="table table-bordered align-middle">
+                                <thead>
+                                    <tr class="table-light text-center">
+                                        <th class="text-start" width="220">Aspek Penilaian</th>
+                                        <th class="bg-danger-subtle" width="40%">
+                                            <i class="bi bi-x-circle text-danger"></i><br>
+                                            <strong>SEBELUM (PROSES MANUAL)</strong><br>
+                                            <small class="text-muted">Pencarian Fisik di Lemari Arsip</small>
+                                        </th>
+                                        <th class="bg-success-subtle" width="40%">
+                                            <i class="bi bi-check-circle text-success"></i><br>
+                                            <strong>SESUDAH (SISTEM E-ARSIP AI)</strong><br>
+                                            <small class="text-muted">Sistem Pencarian Cerdas</small>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-start fw-bold"><i class="bi bi-stopwatch text-primary"></i> Waktu Pencarian</td>
+                                        <td class="text-danger fw-bold fs-5 text-center">
+                                            10 – 30 Menit
+                                            <small class="fw-normal text-muted d-block mt-1 fs-6">Sangat lambat karena harus mencari map dokumen secara fisik satu per satu.</small>
+                                        </td>
+                                        <td class="text-success fw-bold fs-5 text-center">
+                                            ± {{ eval_data.avg_response_time }} Milidetik
+                                            <small class="fw-normal text-muted d-block mt-1 fs-6">Sangat cepat (real-time) karena dokumen dicari secara otomatis dalam database.</small>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-start fw-bold"><i class="bi bi-bullseye text-primary"></i> Akurasi Temu Kembali</td>
+                                        <td class="text-danger text-center">
+                                            <strong>Rentan Human Error</strong>
+                                            <small class="text-muted d-block mt-1">Dokumen sering terselip, hilang, atau sulit ditemukan jika lupa judul spesifiknya.</small>
+                                        </td>
+                                        <td class="text-success text-center">
+                                            <strong>Akurat (Cosine Similarity)</strong>
+                                            <small class="text-muted d-block mt-1">Sistem mampu menemukan dokumen secara akurat dan mengurutkan berdasarkan tingkat kemiripan meskipun judul tidak sama persis.</small>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-start fw-bold"><i class="bi bi-tags text-primary"></i> Klasifikasi Surat</td>
+                                        <td class="text-danger text-center">
+                                            <strong>Manual oleh Staf</strong>
+                                            <small class="text-muted d-block mt-1">Staf harus membaca dan memilah dokumen satu per satu ke dalam map kategori (Sering terjadi salah penempatan).</small>
+                                        </td>
+                                        <td class="text-success text-center">
+                                            <strong>Otomatis (AI Naive Bayes)</strong>
+                                            <small class="text-muted d-block mt-1">Sistem secara cerdas memprediksi kategori surat secara otomatis dengan akurasi pengujian sebesar <strong>{{ "%.2f"|format(eval_data.comparison.after.accuracy * 100) }}%</strong>.</small>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-start fw-bold"><i class="bi bi-shield-check text-primary"></i> Keamanan Data</td>
+                                        <td class="text-danger text-center">
+                                            <strong>Risiko Tinggi</strong>
+                                            <small class="text-muted d-block mt-1">Rentan hilang/rusak karena faktor fisik dan sering terjadi penumpukan serta duplikasi dokumen.</small>
+                                        </td>
+                                        <td class="text-success text-center">
+                                            <strong>Aman & Terpusat</strong>
+                                            <small class="text-muted d-block mt-1">Dokumen tersimpan rapi secara digital di dalam server, meminimalisir kerusakan fisik.</small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Perbandingan Metrik Algoritmik (Revisi #7) -->
+                        <h6 class="fw-bold mt-4 mb-3"><i class="bi bi-bar-chart-line text-primary"></i> Perbandingan Metrik Algoritmik</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="card border-danger">
+                                    <div class="card-header bg-danger-subtle text-center py-2">
+                                        <strong>{{ eval_data.comparison.before.method }}</strong>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <h3 class="text-danger fw-bold">{{ "%.2f"|format(eval_data.comparison.before.accuracy * 100) }}%</h3>
+                                        <small class="text-muted">Accuracy</small>
+                                        <hr>
+                                        <div class="row text-center small">
+                                            <div class="col-4">
+                                                <strong>{{ "%.2f"|format(eval_data.comparison.before.precision * 100) }}%</strong><br><span class="text-muted">Precision</span>
+                                            </div>
+                                            <div class="col-4">
+                                                <strong>{{ "%.2f"|format(eval_data.comparison.before.recall * 100) }}%</strong><br><span class="text-muted">Recall</span>
+                                            </div>
+                                            <div class="col-4">
+                                                <strong>{{ "%.2f"|format(eval_data.comparison.before.f1 * 100) }}%</strong><br><span class="text-muted">F1-Score</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success-subtle text-center py-2">
+                                        <strong>{{ eval_data.comparison.after.method }}</strong>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <h3 class="text-success fw-bold">{{ "%.2f"|format(eval_data.comparison.after.accuracy * 100) }}%</h3>
+                                        <small class="text-muted">Accuracy</small>
+                                        <hr>
+                                        <div class="row text-center small">
+                                            <div class="col-4">
+                                                <strong>{{ "%.2f"|format(eval_data.comparison.after.precision * 100) }}%</strong><br><span class="text-muted">Precision</span>
+                                            </div>
+                                            <div class="col-4">
+                                                <strong>{{ "%.2f"|format(eval_data.comparison.after.recall * 100) }}%</strong><br><span class="text-muted">Recall</span>
+                                            </div>
+                                            <div class="col-4">
+                                                <strong>{{ "%.2f"|format(eval_data.comparison.after.f1 * 100) }}%</strong><br><span class="text-muted">F1-Score</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if eval_data.comparison.peningkatan > 0 %}
+                        <div class="alert alert-success text-center">
+                            <h5 class="fw-bold mb-1"><i class="bi bi-graph-up-arrow"></i> Peningkatan Akurasi: +{{ "%.2f"|format(eval_data.comparison.peningkatan * 100) }}%</h5>
+                            <p class="mb-0 small">Dengan penambahan Naïve Bayes, akurasi meningkat sebesar <strong>{{ "%.2f"|format(eval_data.comparison.persen_peningkatan) }}%</strong> dibandingkan hanya menggunakan TF-IDF + Cosine Similarity saja.</p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Efisiensi Pencarian (Revisi #5) -->
+                        {% if eval_data.efficiency %}
+                        <h6 class="fw-bold mt-4 mb-3"><i class="bi bi-speedometer text-primary"></i> Metrik Efisiensi Pencarian (Terukur)</h6>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-bordered text-center align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-start">Metrik</th>
+                                        <th class="bg-danger-subtle">Manual</th>
+                                        <th class="bg-success-subtle">Sistem</th>
+                                        <th>Peningkatan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-start fw-bold">Waktu Rata-rata</td>
+                                        <td class="text-danger fw-bold">15 menit (900.000 ms)</td>
+                                        <td class="text-success fw-bold">{{ eval_data.efficiency.avg_ms }} ms</td>
+                                        <td class="fw-bold text-primary">{{ eval_data.efficiency.speed_factor|int }}× lebih cepat</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-start fw-bold">Waktu Tercepat</td>
+                                        <td class="text-muted">—</td>
+                                        <td class="text-success">{{ eval_data.efficiency.min_ms }} ms</td>
+                                        <td>—</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-start fw-bold">Waktu Terlambat</td>
+                                        <td class="text-muted">—</td>
+                                        <td class="text-warning">{{ eval_data.efficiency.max_ms }} ms</td>
+                                        <td>—</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-start fw-bold">Total Pencarian Terekam</td>
+                                        <td class="text-muted">—</td>
+                                        <td>{{ eval_data.efficiency.total_searches }}</td>
+                                        <td>—</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-start fw-bold">Jumlah Langkah</td>
+                                        <td class="text-danger">5-7 langkah (buka lemari, cari map, buka map, scan...)</td>
+                                        <td class="text-success">1 langkah (ketik + enter)</td>
+                                        <td class="fw-bold text-primary">—</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-start fw-bold">Bisa cari tanpa tahu judul pasti?</td>
+                                        <td class="text-danger">❌ Tidak</td>
+                                        <td class="text-success">✅ Ya (semantic search)</td>
+                                        <td>—</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+
+                        <div class="alert alert-success mt-4 mb-0">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <strong>Kesimpulan Uji Ahli & Pengguna:</strong> Penerapan E-Arsip berbasis kombinasi TF-IDF dan Naive Bayes ini terbukti <strong>berhasil menyelesaikan permasalahan pengelolaan dokumen di SLB</strong>. Proses yang sebelumnya memakan waktu hingga puluhan menit dan berisiko kehilangan data, kini dapat diselesaikan dalam hitungan milidetik secara akurat berkat dukungan kecerdasan buatan.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ═══ Tab Pengujian Pencarian Otomatis (Revisi #7) ═══ -->
+            {% if eval_data.test_scenarios %}
+            <div class="tab-pane fade" id="pengujian" role="tabpanel">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-clipboard-check text-primary"></i> Pengujian Kualitas Pencarian Otomatis (Information Retrieval)</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small mb-3">Sistem diuji dengan 5 skenario pencarian otomatis. Setiap skenario menguji: (1) apakah prediksi kategori benar, dan (2) seberapa relevan dokumen yang muncul di peringkat atas (<em>Precision@K</em>).</p>
+
+                        <!-- Ringkasan Metrik -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="card bg-primary text-white border-0 text-center">
+                                    <div class="card-body py-3">
+                                        <h6 class="text-white-50 mb-1">Akurasi Klasifikasi</h6>
+                                        <h2 class="fw-bold mb-0">{{ "%.0f"|format(eval_data.test_accuracy * 100) }}%</h2>
+                                        <small>{{ (eval_data.test_scenarios|selectattr('is_correct')|list|length) }}/{{ eval_data.test_scenarios|length }} benar</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-success text-white border-0 text-center">
+                                    <div class="card-body py-3">
+                                        <h6 class="text-white-50 mb-1">Rata-rata Precision@5</h6>
+                                        <h2 class="fw-bold mb-0">{{ "%.0f"|format(eval_data.avg_precision_5 * 100) }}%</h2>
+                                        <small>Relevansi 5 hasil teratas</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-info text-white border-0 text-center">
+                                    <div class="card-body py-3">
+                                        <h6 class="text-white-50 mb-1">Rata-rata Precision@10</h6>
+                                        <h2 class="fw-bold mb-0">{{ "%.0f"|format(eval_data.avg_precision_10 * 100) }}%</h2>
+                                        <small>Relevansi 10 hasil teratas</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detail per Skenario -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm align-middle text-center">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-start">Query Pencarian</th>
+                                        <th>Kategori yang Diharapkan</th>
+                                        <th>Prediksi AI</th>
+                                        <th>Status</th>
+                                        <th>Hasil</th>
+                                        <th>Waktu</th>
+                                        <th>Precision@5</th>
+                                        <th>Precision@10</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for t in eval_data.test_scenarios %}
+                                    <tr>
+                                        <td class="text-start"><code class="small">{{ t.query }}</code></td>
+                                        <td><span class="badge bg-secondary">{{ t.expected }}</span></td>
+                                        <td><span class="badge {{ 'bg-success' if t.is_correct else 'bg-danger' }}">{{ t.predicted }}</span></td>
+                                        <td>
+                                            {% if t.is_correct %}
+                                            <i class="bi bi-check-circle-fill text-success"></i>
+                                            {% else %}
+                                            <i class="bi bi-x-circle-fill text-danger"></i>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ t.results_count }} dok</td>
+                                        <td class="small">{{ t.response_time_ms }} ms</td>
+                                        <td class="fw-bold {{ 'text-success' if t.precision_at_5 >= 0.8 else 'text-warning' if t.precision_at_5 >= 0.5 else 'text-danger' }}">{{ "%.0f"|format(t.precision_at_5 * 100) }}%</td>
+                                        <td class="fw-bold {{ 'text-success' if t.precision_at_10 >= 0.8 else 'text-warning' if t.precision_at_10 >= 0.5 else 'text-danger' }}">{{ "%.0f"|format(t.precision_at_10 * 100) }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="alert alert-light border small mt-3 mb-0">
+                            <strong><i class="bi bi-info-circle"></i> Penjelasan Metrik:</strong>
+                            <ul class="mb-0 mt-1">
+                                <li><strong>Precision@K:</strong> Dari K dokumen teratas yang ditampilkan, berapa persen yang benar-benar berkategori sesuai harapan. Semakin tinggi, semakin relevan hasil pencarian.</li>
+                                <li><strong>Akurasi Klasifikasi:</strong> Berapa persen prediksi kategori Naïve Bayes yang benar dari total skenario uji.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Recent Searches -->
+{% if recent_searches %}
+<div class="card border-0 shadow-sm mt-4 mb-4">
+    <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+        <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary"></i> Riwayat Pencarian Terakhir</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light text-muted small">
+                    <tr>
+                        <th>Waktu Pencarian</th>
+                        <th>Kata Kunci Asli</th>
+                        <th>Kata Kunci Bersih (Stemming)</th>
+                        <th>Prediksi Kategori</th>
+                        <th>Status / Hasil</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in recent_searches %}
+                    <tr>
+                        <td class="small text-muted">{{ s.search_date.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td class="fw-bold">"{{ s.query_text }}"</td>
+                        <td class="text-muted font-monospace small">{{ s.preprocessed_query or '-' }}</td>
+                        <td><span class="badge bg-primary">{{ s.predicted_kategori or 'Tidak Ditemukan' }}</span></td>
+                        <td class="small">
+                            <span class="text-success fw-bold">{{ s.results_count }} Dokumen</span><br>
+                            <span class="text-muted" style="font-size: 0.75rem;">Diproses: {{ s.response_time_ms }} ms</span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('pencarian.hasil_detail', search_id=s.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> Lihat</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

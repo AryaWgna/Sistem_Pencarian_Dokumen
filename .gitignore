@@ -1,0 +1,111 @@
+# =============================================
+# .gitignore - Program Skripsi
+# Mengamankan file laporan, dokumen pribadi,
+# dan file sensitif dari GitHub
+# =============================================
+
+# --- File Laporan & Dokumen ---
+*.pdf
+*.doc
+*.docx
+*.pptx
+*.ppt
+*.xlsx
+*.xls
+*.odt
+*.odp
+*.ods
+*.rtf
+
+# --- Folder Skripsi, Data, dan Verifikasi ---
+Skripsi/
+Data/
+verifikasi/
+
+# --- File Upload Dokumen ---
+app/static/uploads/
+
+# --- Database ---
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Model Machine Learning (auto-generated) ---
+models/*.pkl
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# --- Virtual Environment ---
+venv/
+.venv/
+env/
+ENV/
+
+# --- Environment Variables (rahasia) ---
+.env
+.env.local
+.env.production
+.env.*.local
+
+# --- IDE & Editor ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# --- OS Generated ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# --- File Test Sementara ---
+test_math.docx
+*.log
+confusion_matrix_plot.png
+diff_dokumen.txt
+temp_skripsi_text.txt
+
+# --- Dataset (berisi data dokumen SLB) ---
+dataset/
+
+# --- SQL Seed Data (berisi data pribadi pegawai) ---
+sql/seed_data.sql
+
+# --- Script Laporan / Skripsi (bukan sistem utama) ---
+scripts/generate_bab*.py
+scripts/generate_presentasi*.py
+scripts/extract_skripsi*.py
+scripts/create_lampiran*.py
+scripts/extract_code_images.py
+scripts/convert_to_v*.py
+scripts/analyze_*.py
+scripts/extract_docs*.py
+scripts/extract_body*.py
+scripts/extract_excel*.py
+scripts/extract_file*.py
+scripts/extract_full*.py
+scripts/extract_remaining*.py
+scripts/check_*.py
+
+# --- Misc ---
+*.bak
+*.tmp
+*.temp

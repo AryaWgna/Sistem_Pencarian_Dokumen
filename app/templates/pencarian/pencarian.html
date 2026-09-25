@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Pencarian Dokumen{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="text-center mb-5 mt-4">
+            <i class="bi bi-archive display-2 text-primary"></i>
+            <h3 class="fw-bold mt-3">Pencarian Dokumen Digital</h3>
+            <p class="text-muted">Cari dokumen menggunakan kombinasi TF-IDF dan Naïve Bayes</p>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('pencarian.pencarian') }}">
+                    <div class="input-group mb-4 shadow-sm rounded">
+                        <input type="text" name="query" class="form-control border-0 px-4 py-3" 
+                               placeholder="Contoh: Undangan Rapat Komite Sekolah..." 
+                               value="{{ query if query else '' }}" required autofocus style="font-size: 1rem;">
+                        <button class="btn btn-primary px-4 fw-bold" type="submit">
+                            <i class="bi bi-search me-2"></i>Cari Dokumen
+                        </button>
+                    </div>
+                    
+                    <div class="alert alert-light border border-info border-start-5 border-end-0 border-top-0 border-bottom-0 shadow-sm small text-muted text-start mb-0">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-mortarboard text-info"></i> Sudut Pandang Penelitian (Alur Sistem AI)</h6>
+                        <p class="mb-2">Saat Anda menekan tombol <strong>Cari Dokumen</strong>, sistem menjalankan pipeline algoritma berikut di balik layar (<em>Whitebox</em>):</p>
+                        <ol class="mb-0 ps-3">
+                            <li><strong>Preprocessing:</strong> Teks masukan Anda dibersihkan (Case Folding, Tokenizing, Filtering) dan dikembalikan ke kata dasarnya (Stemming Sastrawi).</li>
+                            <li><strong>Pembobotan TF-IDF:</strong> Sistem membandingkan kata kunci Anda dengan vektor TF-IDF seluruh dokumen untuk mencari kemiripan (Cosine Similarity).</li>
+                            <li><strong>Klasifikasi Naïve Bayes:</strong> Bersamaan dengan itu, model AI menebak surat jenis apa yang sedang Anda cari (misal: "SK" atau "Laporan").</li>
+                            <li><strong>AI Boosting:</strong> Dokumen yang diprediksi 100% cocok dengan tebakan Naïve Bayes akan mendapat "Boost" (skor tambahan) agar posisinya naik ke peringkat teratas.</li>
+                        </ol>
+                    </div>
+                    </div>
+                </form>
+                <div class="mt-3">
+                    <small class="text-muted">Contoh: "surat keterangan siswa", "undangan rapat", "laporan kegiatan", "SK kelulusan"</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4 text-center">
+            <p class="text-muted small">
+                <i class="bi bi-info-circle"></i> Sistem menggunakan metode pembobotan <b>TF-IDF</b> dan klasifikasi <b>Naïve Bayes</b> untuk mengurutkan hasil berdasarkan tingkat relevansi.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

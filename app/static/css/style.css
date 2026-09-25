@@ -1,0 +1,245 @@
+/* ===================================
+   Sistem Pencarian Dokumen SLB
+   Custom Styles
+   =================================== */
+
+:root {
+    --primary: #0f4c81; /* Classic Blue - Institutional */
+    --primary-dark: #0b3d68;
+    --primary-light: #e6f0fa;
+    --bg-body: #f4f6f9; /* Standard light gray admin background */
+    --card-radius: 6px; /* More formal, less rounded */
+}
+
+* {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    background-color: var(--bg-body);
+    color: #333333;
+}
+
+/* === Layout & Sidebar === */
+.wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    background-color: var(--primary);
+    color: #fff;
+    transition: all 0.3s;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    z-index: 1040;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+#sidebar .sidebar-header {
+    padding: 20px;
+    background: rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+#sidebar ul.components {
+    padding: 20px 0;
+}
+
+#sidebar ul li a {
+    padding: 12px 20px;
+    font-size: 0.95em;
+    display: flex;
+    align-items: center;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+#sidebar ul li a:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+    border-left: 4px solid #fff;
+}
+
+#sidebar ul li.active > a,
+#sidebar ul li a.active {
+    color: #fff;
+    background: rgba(255,255,255,0.15);
+    border-left: 4px solid #fff;
+    font-weight: 600;
+}
+
+#sidebar ul li a i {
+    margin-right: 12px;
+    font-size: 1.1em;
+}
+
+#content {
+    width: 100%;
+    background-color: var(--bg-body);
+    min-height: 100vh;
+}
+
+/* === Topbar in Content === */
+.topbar {
+    background: #fff;
+    padding: 15px 25px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* === Cards === */
+.card {
+    border-radius: var(--card-radius);
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+}
+
+/* === Auth Pages === */
+.auth-logo-text {
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: -0.5px;
+}
+
+/* === Buttons === */
+.btn-primary {
+    background: var(--primary);
+    border-color: var(--primary);
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+}
+
+.btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+    border-radius: 8px;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+/* === Form Controls === */
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.15);
+}
+
+.input-group-lg .form-control {
+    border-radius: 8px 0 0 8px;
+}
+
+.input-group-lg .btn {
+    border-radius: 0 8px 8px 0;
+}
+
+/* === Badges === */
+.bg-primary-subtle {
+    background-color: var(--primary-light) !important;
+}
+
+.text-primary {
+    color: var(--primary) !important;
+}
+
+/* === Tables === */
+.table thead th {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    font-weight: 600;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.table tbody td {
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+/* === Progress bars === */
+.progress {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: width 0.6s ease;
+}
+
+/* === Search Results === */
+.list-group-item {
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.list-group-item:hover {
+    border-left-color: var(--primary);
+    background-color: #fafbff;
+}
+
+/* === Pagination === */
+.page-link {
+    color: var(--primary);
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* === Alert === */
+.alert {
+    border-radius: 10px;
+    border: none;
+    font-size: 0.9rem;
+}
+
+/* === Scrollbar === */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    border-radius: 3px;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+    .container-fluid { padding: 0.5rem !important; }
+    .stat-icon { display: none; }
+    .card-body { padding: 1rem; }
+}
+
+
+/* === Print Mode === */
+@media print {
+    #sidebar, .navbar, .d-print-none, .nav-tabs { display: none !important; }
+    #content-wrapper { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+    body { background-color: white; }
+    .card { border: none !important; box-shadow: none !important; }
+    .print-section { page-break-inside: avoid; }
+}
